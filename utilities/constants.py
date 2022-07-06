@@ -1,0 +1,2 @@
+KUBECONFIG = "KUBECONFIG"
+MPS_QE = "mps-qe"
