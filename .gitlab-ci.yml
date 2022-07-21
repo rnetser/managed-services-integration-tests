@@ -23,4 +23,4 @@ run-tox:
     - source venv/bin/activate
     - pip install tox
   script:
-    - tox -e code-check
+    - tox
