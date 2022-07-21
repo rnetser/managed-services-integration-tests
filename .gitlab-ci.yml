@@ -1,0 +1,26 @@
+---
+stages:
+  - validate
+
+run-tox:
+  image:
+    name: python:latest
+  tags: ['docker']
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: always
+    - if: '$CI_PIPELINE_SOURCE == "push"
+      when: always
+  stage: validate
+  cache:
+    paths:
+      - .cache/pip
+      - venv/
+  before_script:
+    - python --version  # For debugging
+    - pip install virtualenv
+    - virtualenv venv
+    - source venv/bin/activate
+    - pip install tox
+  script:
+    - tox -e code-check
