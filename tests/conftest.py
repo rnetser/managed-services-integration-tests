@@ -2,6 +2,7 @@ import logging
 
 import pytest
 from ocp_resources.node import Node
+
 from ocp_utilities.infra import get_admin_client
 
 
