@@ -1,7 +1,6 @@
 import logging
 
 from ocp_resources.storage_class import StorageClass
-
 from ocp_utilities.exceptions import ClusterSanityError
 from ocp_utilities.infra import validate_nodes_ready, validate_nodes_schedulable
 from ocp_utilities.pytest_utils import exit_pytest_execution
