@@ -1,9 +1,11 @@
 import logging
 
 from ocp_resources.storage_class import StorageClass
-from ocp_utilities.exceptions import ClusterSanityError
-from ocp_utilities.infra import validate_nodes_ready, validate_nodes_schedulable
-from ocp_utilities.pytest_utils import exit_pytest_execution
+from ocp_utilities.exceptions import NodeNotReadyError, NodeUnschedulableError
+from ocp_utilities.infra import assert_nodes_ready, assert_nodes_schedulable
+
+from utilities.exceptions import StorageClassError
+from utilities.pytest_utils import exit_pytest_execution
 
 
 LOGGER = logging.getLogger(__name__)
@@ -29,8 +31,8 @@ def cluster_sanity(
             sc for sc in _cluster_storage_classes if not StorageClass(name=sc).exists
         ]
         if missing_storage_classes:
-            raise ClusterSanityError(
-                err_str=f"Cluster is missing storage class. Expected {_cluster_storage_classes}\n,"
+            raise StorageClassError(
+                f"Cluster is missing storage class. Expected {_cluster_storage_classes}\n,"
                 f"missing sc {missing_storage_classes}\n"
             )
 
@@ -42,12 +44,12 @@ def cluster_sanity(
 
         # validate that all the nodes are ready and schedulable
         LOGGER.info("Check nodes sanity.")
-        validate_nodes_ready(nodes=nodes)
-        validate_nodes_schedulable(nodes=nodes)
+        assert_nodes_ready(nodes=nodes)
+        assert_nodes_schedulable(nodes=nodes)
 
-    except ClusterSanityError as ex:
+    except (NodeNotReadyError, NodeUnschedulableError) as ex:
         exit_pytest_execution(
             filename=exceptions_filename,
-            message=ex.err_str,
+            message=ex.args[0],
             junitxml_property=junitxml_property,
         )

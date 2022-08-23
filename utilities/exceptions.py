@@ -1,0 +1,2 @@
+class StorageClassError(Exception):
+    pass

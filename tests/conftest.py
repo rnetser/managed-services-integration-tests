@@ -2,7 +2,7 @@ import logging
 
 import pytest
 from ocp_resources.node import Node
-from ocp_utilities.infra import get_admin_client
+from ocp_resources.resource import get_client
 
 
 LOGGER = logging.getLogger(__name__)
@@ -15,7 +15,7 @@ def admin_client():
     """
     Get DynamicClient
     """
-    return get_admin_client()
+    return get_client()
 
 
 @pytest.fixture(scope="session")

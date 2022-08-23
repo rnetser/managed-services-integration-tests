@@ -2,8 +2,9 @@ import logging
 import os
 
 import pytest
-from ocp_utilities.logger import separator, setup_logging
 from pytest_testconfig import config as py_config
+
+from utilities.logger import separator, setup_logging
 
 
 LOGGER = logging.getLogger(__name__)
