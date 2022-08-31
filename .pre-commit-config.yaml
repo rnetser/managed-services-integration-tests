@@ -3,7 +3,7 @@ default_language_version:
 
 repos:
   - repo: https://github.com/myint/autoflake
-    rev: "v1.4"
+    rev: "v1.5.2"
     hooks:
       - id: autoflake
         args:
