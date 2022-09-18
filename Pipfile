@@ -4,14 +4,18 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [packages]
-openshift-python-wrapper = "*"
+openshift-python-wrapper="*"
 docker="*"
 colorlog="*"
 ipdb = "*"
-openshift-python-utilities = "==4.11.*"
+openshift-python-utilities="==4.11.*"
+openshift-cluster-management-python-wrapper="==1.0.*"
 pytest = "*"
 pytest-testconfig = "*"
 pytest-progress="==1.2.2"  # https://github.com/ssrikanta/pytest-progress
+hvac = "*"
+pytz = "*"
+pip = "*"
 
 [requires]
 python_version = "3"

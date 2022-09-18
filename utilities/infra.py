@@ -1,9 +1,11 @@
 import logging
 
+from ocm_python_wrapper.ocm_client import OCMPythonClient
 from ocp_resources.storage_class import StorageClass
-
 from ocp_utilities.exceptions import NodeNotReadyError, NodeUnschedulableError
 from ocp_utilities.infra import assert_nodes_ready, assert_nodes_schedulable
+from pytest_testconfig import py_config
+
 from utilities.exceptions import StorageClassError
 from utilities.pytest_utils import exit_pytest_execution
 
@@ -53,3 +55,20 @@ def cluster_sanity(
             message=ex.args[0],
             junitxml_property=junitxml_property,
         )
+
+
+def get_ocm_client(vault_config):
+    api_host = py_config["api_server"]
+    LOGGER.info(f"Running against {api_host}")
+    ocm_client = OCMPythonClient(
+        token=ocm_token(server=api_host, vault_config=vault_config),
+        endpoint="https://sso.redhat.com/auth/realms/redhat-external/protocol/openid-connect/token",
+        api_host=api_host,
+        discard_unknown_keys=True,
+    )
+    return ocm_client.client
+
+
+def ocm_token(server, vault_config):
+    ocm_token_key = "ocm_api_token" if server == "production" else "ocm_stage_api_token"
+    return vault_config["data"]["data"][ocm_token_key]

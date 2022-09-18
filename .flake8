@@ -65,7 +65,9 @@ fcn_exclude_functions =
     signal,
     submit,
     io,
-    benedict
+    benedict,
+    urllib3,
+    timezone
 
 nit_exclude_imports =
     os_params,

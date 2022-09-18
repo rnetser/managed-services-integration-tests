@@ -15,6 +15,8 @@ BASIC_LOGGER = logging.getLogger("basic")
 def pytest_addoption(parser):
     storage_group = parser.getgroup(name="Storage")
     log_collector_group = parser.getgroup(name="LogCollector")
+    ocm_group = parser.getgroup(name="OCM")
+    upgrade_group = parser.getgroup(name="Upgrade")
 
     # Storage addoption
     storage_group.addoption("--storage-classes", help="Storage classes to test")
@@ -35,6 +37,12 @@ def pytest_addoption(parser):
         help="Path to pytest log file",
         default="pytest-tests.log",
     )
+
+    # OCM group
+    ocm_group.addoption("--cluster-name", help="Cluster name")
+
+    # Upgrade group
+    upgrade_group.addoption("--ocp-target-version", help="cluster OCP target version")
 
 
 def pytest_cmdline_main(config):
