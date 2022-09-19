@@ -59,3 +59,8 @@ def vault_config():
 @pytest.fixture(scope="session")
 def ocm_client_scope_session(vault_config):
     return get_ocm_client(vault_config=vault_config)
+
+
+@pytest.fixture(scope="class")
+def ocm_client_scope_class(vault_config):
+    return get_ocm_client(vault_config=vault_config)
