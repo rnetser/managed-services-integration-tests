@@ -96,3 +96,6 @@ export PYCURL_SSL_LIBRARY=nss # or openssl. depend on the error (link-time ssl b
 pipenv run pip uninstall pycurl
 pipenv run pip install pycurl --no-cache-dir
 ```
+
+# Running with OCM client
+Either export `ANSIBLE_HASHI_VAULT_SECRET_ID` when working locally or set `OCM_TOKEN` env variable in test container

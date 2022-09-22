@@ -57,18 +57,13 @@ def cluster_sanity(
         )
 
 
-def get_ocm_client(vault_config):
+def get_ocm_client(token):
     api_host = py_config["api_server"]
     LOGGER.info(f"Running against {api_host}")
     ocm_client = OCMPythonClient(
-        token=ocm_token(server=api_host, vault_config=vault_config),
+        token=token,
         endpoint="https://sso.redhat.com/auth/realms/redhat-external/protocol/openid-connect/token",
         api_host=api_host,
         discard_unknown_keys=True,
     )
     return ocm_client.client
-
-
-def ocm_token(server, vault_config):
-    ocm_token_key = "ocm_api_token" if server == "production" else "ocm_stage_api_token"
-    return vault_config["data"]["data"][ocm_token_key]
