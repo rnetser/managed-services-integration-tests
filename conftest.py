@@ -1,7 +1,17 @@
 import logging
 import os
+import shutil
 
 import pytest
+import yaml
+from ocp_resources.node import Node
+from ocp_resources.pod import Pod
+from ocp_resources.resource import get_client
+from ocp_utilities.data_collector import (
+    collect_pods_data,
+    collect_resources_yaml_instance,
+    prepare_pytest_item_data_dir,
+)
 from pytest_testconfig import config as py_config
 
 from utilities.logger import separator, setup_logging
@@ -14,25 +24,19 @@ BASIC_LOGGER = logging.getLogger("basic")
 # pytest fixtures
 def pytest_addoption(parser):
     storage_group = parser.getgroup(name="Storage")
-    log_collector_group = parser.getgroup(name="LogCollector")
+    data_collector_group = parser.getgroup(name="DataCollector")
     ocm_group = parser.getgroup(name="OCM")
     upgrade_group = parser.getgroup(name="Upgrade")
 
     # Storage addoption
     storage_group.addoption("--storage-classes", help="Storage classes to test")
 
-    # Log collector group
-    log_collector_group.addoption(
-        "--log-collector",
-        help="Enable log collector to capture additional logs and resources for failed tests",
-        action="store_true",
+    # Data collector group
+    data_collector_group.addoption(
+        "--data-collector",
+        help="pass YAML file path to enable data collector to capture additional logs and resources",
     )
-    log_collector_group.addoption(
-        "--log-collector-dir",
-        help="Path for log collector to store the logs",
-        default="tests-collected-info",
-    )
-    log_collector_group.addoption(
+    data_collector_group.addoption(
         "--pytest-log-file",
         help="Path to pytest log file",
         default="pytest-tests.log",
@@ -51,25 +55,18 @@ def pytest_cmdline_main(config):
 
 
 def pytest_sessionstart(session):
-    if session.config.getoption("log_collector"):
-        # set log_collector to True if it is explicitly requested,
-        # otherwise use what is set in the global config
-        py_config["log_collector"] = True
-
-    if py_config.get("log_collector", False):
-        # this could already be set in the global config
-        # if it is set then the environment must be configured so that openshift-python-wrapper can use it
-        os.environ["TEST_COLLECT_LOGS"] = "1"
-
-    # store the base directory for log collection in the environment so it can be used by utilities
-    os.environ["TEST_COLLECT_BASE_DIR"] = session.config.getoption("log_collector_dir")
+    data_collector = session.config.getoption("--data-collector")
+    if data_collector:
+        with open(data_collector, "r") as fd:
+            py_config["data_collector"] = yaml.safe_load(fd.read())
+            shutil.rmtree(
+                py_config["data_collector"]["data_collector_base_directory"],
+                ignore_errors=True,
+            )
 
     tests_log_file = session.config.getoption("pytest_log_file")
     if os.path.exists(tests_log_file):
-        os.remove(tests_log_file)
-    tests_log_file = session.config.getoption("pytest_log_file")
-    if os.path.exists(tests_log_file):
-        os.remove(tests_log_file)
+        shutil.rmtree(tests_log_file, ignore_errors=True)
 
     setup_logging(
         log_file=tests_log_file,
@@ -104,6 +101,15 @@ def pytest_runtest_setup(item):
     BASIC_LOGGER.info(f"\n{separator(symbol_='-', val=item.name)}")
     BASIC_LOGGER.info(f"{separator(symbol_='-', val='SETUP')}")
 
+    if item.session.config.getoption("--data-collector"):
+        py_config["data_collector"][
+            "collector_directory"
+        ] = prepare_pytest_item_data_dir(
+            item=item,
+            base_directory=py_config["data_collector"]["data_collector_base_directory"],
+            subdirectory_name="setup",
+        )
+
 
 def pytest_sessionfinish(session, exitstatus):
     reporter = session.config.pluginmanager.get_plugin("terminalreporter")
@@ -121,13 +127,40 @@ def pytest_sessionfinish(session, exitstatus):
     )
     BASIC_LOGGER.info(f"{separator(symbol_='-', val=summary)}")
 
+    # Remove empty directories from data collector directory
+    if session.config.getoption("--data-collector"):
+        collector_directory = py_config["data_collector"][
+            "data_collector_base_directory"
+        ]
+        for root, dirs, files in os.walk(collector_directory, topdown=False):
+            for _dir in dirs:
+                dir_path = os.path.join(root, _dir)
+                if not os.listdir(dir_path):
+                    shutil.rmtree(dir_path, ignore_errors=True)
+
 
 def pytest_runtest_call(item):
     BASIC_LOGGER.info(f"{separator(symbol_='-', val='CALL')}")
+    if item.session.config.getoption("--data-collector"):
+        py_config["data_collector"][
+            "collector_directory"
+        ] = prepare_pytest_item_data_dir(
+            item=item,
+            base_directory=py_config["data_collector"]["data_collector_base_directory"],
+            subdirectory_name="call",
+        )
 
 
 def pytest_runtest_teardown(item):
     BASIC_LOGGER.info(f"{separator(symbol_='-', val='TEARDOWN')}")
+    if item.session.config.getoption("--data-collector"):
+        py_config["data_collector"][
+            "collector_directory"
+        ] = prepare_pytest_item_data_dir(
+            item=item,
+            base_directory=py_config["data_collector"]["data_collector_base_directory"],
+            subdirectory_name="teardown",
+        )
 
 
 @pytest.fixture(scope="session")
@@ -137,3 +170,20 @@ def junitxml_plugin(request, record_testsuite_property):
         if request.config.pluginmanager.has_plugin("junitxml")
         else None
     )
+
+
+def pytest_exception_interact(node, call, report):
+    BASIC_LOGGER.error(report.longreprtext)
+    if node.session.config.getoption("--data-collector"):
+        resources_to_collect = [Node]
+        base_directory = py_config["data_collector"]["data_collector_base_directory"]
+        try:
+            collect_resources_yaml_instance(
+                resources_to_collect=resources_to_collect, base_directory=base_directory
+            )
+            pods = list(Pod.get(dyn_client=get_client()))
+            collect_pods_data(pods_list=pods, base_directory=base_directory)
+
+        except Exception as exp:
+            LOGGER.warning(f"Failed to collect resources: {exp}")
+            return

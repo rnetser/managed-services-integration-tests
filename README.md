@@ -31,12 +31,22 @@ To see verbose logging of a test run, add the following parameter:
 ```bash
 make tests PYTEST_ARGS="-o log_cli=true"
 ```
-To enable log-collector set TEST_COLLECT_LOGS
-To change the destination folder of collected logs set TEST_COLLECT_LOGS_DIR
-```bash
-export TEST_COLLECT_LOGS=1
-export TEST_COLLECT_LOGS_DIR=/my/logs/dir
+To enable data-collector pass data-collector.yaml
+YAML format:
+```yaml
+    data_collector_base_directory: "<base directory for data collection>"
+    collect_data_function: "<import path for data collection method>"
+
 ```
+YAML Example:
+```yaml
+    data_collector_base_directory: "tests-collected-info"
+    collect_data_function: "utilities.data_collector.collect_data"
+    collect_pod_logs: true
+```
+```bash
+pipenv run pytest .... --data-collector=data-collector.yaml
+
 Logs will be available under tests-collected-info/ folder.
 
 #### Cluster upgrade tests
