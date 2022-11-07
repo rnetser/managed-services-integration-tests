@@ -9,7 +9,7 @@
 #
 [general]
 # Ignore certain rules, this example uses both full name and id
-ignore=T5
+ignore=T5,B6
 # ignore=title-trailing-punctuation, T3
 
 
