@@ -1,33 +1,31 @@
-FROM quay.io/centos/centos:stream8
+FROM quay.io/centos/centos:stream9
 
-RUN yum -y install epel-release
-RUN yum -y install --setopt=skip_missing_names_on_install=False \
-python3-pip \
-python3-devel \
-procps-ng \
-rsync \
-gcc \
-git \
-libcurl-devel \
-libxslt-devel \
-libxml2-devel \
-openssl-devel
-
-RUN : \
-  && curl https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable/openshift-client-linux.tar.gz -o /tmp/oc.tar.gz \
-  && tar -xvf /tmp/oc.tar.gz --directory=/usr/bin/ \
-  && rm -rf /usr/local/bin/README.md /tmp/oc.tar.gz \
-  && :
-
-RUN pip3 install pipenv
+RUN yum -y install epel-release && \
+    yum -y install --setopt=skip_missing_names_on_install=False \
+    python3-pip \
+    python3-devel \
+    procps-ng \
+    rsync \
+    gcc \
+    git \
+    libcurl-devel \
+    libxslt-devel \
+    libxml2-devel \
+    openssl-devel
 
 COPY / managed-services-integration-tests/
 WORKDIR managed-services-integration-tests
 
-ENV OPENSHIFT_PYTHON_WRAPPER_LOG_LEVEL=DEBUG
-ENV PIPENV_VENV_IN_PROJECT=1
-RUN pipenv install --skip-lock
-RUN pipenv run pip freeze
+RUN curl https://mirror.openshift.com/pub/openshift-v4/clients/oc/latest/linux/oc.tar.gz -o /tmp/oc.tar.gz && \
+    tar -xvf /tmp/oc.tar.gz --directory=/usr/bin/ && \
+    rm -rf /usr/local/bin/README.md /tmp/oc.tar.gz && \
+    python3 -m pip install pip --upgrade && \
+    python3 -m pip install poetry && \
+    poetry install && \
+    poetry export --without-hashes -n && \
+    poetry show
 
-ENTRYPOINT ["pipenv", "run", "pytest"]
+ENV OPENSHIFT_PYTHON_WRAPPER_LOG_LEVEL=DEBUG
+
+ENTRYPOINT ["poetry", "run", "pytest"]
 CMD ["--collect-only"]

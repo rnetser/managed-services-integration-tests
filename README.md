@@ -5,11 +5,35 @@ This repository contains tests.
 The infra for the tests can be found in https://github.com/RedHatQE/openshift-python-wrapper and https://github.com/RedHatQE/openshift-python-utilities
 flake8 plugins defined in .flake8 can be found in https://github.com/RedHatQE/flake8-plugins
 
-##Setup VirtualEnv
-
+## Setup VirtualEnv
+Use [poetry](https://python-poetry.org/docs/) to manage virtualenv.
 ```bash
-pip3 install pipenv
-pipenv install --skip-lock
+pip install poetry
+```
+After installation, run:
+```bash
+poetry install
+```
+To get current env info
+```bash
+poetry env info
+```
+To get poetry virtualenv names
+```bash
+poetry env list
+```
+To remove current env
+```bash
+poetry env remove <env name>
+```
+To clear poetry cache (needed before update if there is an existing update but the package is not updated)
+```bash
+poetry cache list # get poetry available cache list
+poetry cache clear --all <cache name> # delete all cache (except _default_cache)
+```
+To update one package
+```bash
+poetry update openshift-python-wrapper
 ```
 
 # Getting started
@@ -45,7 +69,7 @@ YAML Example:
     collect_pod_logs: true
 ```
 ```bash
-pipenv run pytest .... --data-collector=data-collector.yaml
+poetry run pytest .... --data-collector=data-collector.yaml
 
 Logs will be available under tests-collected-info/ folder.
 
@@ -103,8 +127,8 @@ ImportError: pycurl: libcurl link-time ssl backend (nss) is different from compi
 To fix it:
 ```bash
 export PYCURL_SSL_LIBRARY=nss # or openssl. depend on the error (link-time ssl backend (nss))
-pipenv run pip uninstall pycurl
-pipenv run pip install pycurl --no-cache-dir
+poetry run pip uninstall pycurl
+poetry run pip install pycurl --no-cache-dir
 ```
 
 # Running with OCM client

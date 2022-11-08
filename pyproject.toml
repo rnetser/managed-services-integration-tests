@@ -1,2 +1,31 @@
 [tool.black]
 line-length = 88
+
+[tool.poetry]
+name = "managed-services-integration-tests"
+version = "1.0"
+description = "managed-services-integration-tests"
+authors = ["managed-services-integration-tests"]
+
+[tool.poetry.dependencies]
+python = "^3.7"
+openshift-python-wrapper = "*"
+docker = "*"
+colorlog = "*"
+openshift-python-utilities = "==4.12.*"
+openshift-cluster-management-python-wrapper = "==1.0.*"
+pytest = "*"
+pytest-testconfig = "*"
+pytest-progress = "==1.2.2"  # https://github.com/ssrikanta/pytest-progress
+hvac = "*"
+pytz = "*"
+pip = "*"
+PyYaml = "*"
+
+[tool.poetry.dev-dependencies]
+ipdb = "*"
+ipython = "*"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

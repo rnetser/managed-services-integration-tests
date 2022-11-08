@@ -7,18 +7,18 @@ IMAGE_TAG ?= "latest"
 
 FULL_OPERATOR_IMAGE ?= "$(IMAGE_REGISTRY)/$(REGISTRY_NAMESPACE)/$(OPERATOR_IMAGE_NAME):$(IMAGE_TAG)"
 
-all: check pipenv run_tests build-container push-container
+all: check poetry run_tests build-container push-container
 
 check:
 	tox
 
-pipenv:
-	-pipenv --rm # '-' for ignore error when pipenv venv is not exists
-	pipenv install --skip-lock
-	pipenv run pip freeze
+poetry:
+	-poetry env remove --all
+	poetry install
+	poetry show
 
 run_tests:
-	pipenv run pytest tests/cluster_sanity
+	poetry run pytest tests/cluster_sanity
 
 build-container:
 	$(IMAGE_BUILD_CMD) build --no-cache -f builder/Dockerfile -t $(FULL_OPERATOR_IMAGE) .
