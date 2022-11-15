@@ -133,3 +133,8 @@ poetry run pip install pycurl --no-cache-dir
 
 # Running with OCM client
 Either export `ANSIBLE_HASHI_VAULT_SECRET_ID` when working locally or set `OCM_TOKEN` env variable in test container
+
+# Running RHOAS API tests
+```bash
+export ANSIBLE_HASHI_VAULT_SECRET_ID=<secret id>
+```

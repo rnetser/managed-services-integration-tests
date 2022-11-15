@@ -21,6 +21,7 @@ hvac = "*"
 pytz = "*"
 pip = "*"
 PyYaml = "*"
+rhoas-sdks = "*"
 
 [tool.poetry.dev-dependencies]
 ipdb = "*"
