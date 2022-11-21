@@ -99,16 +99,7 @@ def pytest_runtest_setup(item):
     Use incremental
     """
     BASIC_LOGGER.info(f"\n{separator(symbol_='-', val=item.name)}")
-    BASIC_LOGGER.info(f"{separator(symbol_='-', val='SETUP')}")
-
-    if item.session.config.getoption("--data-collector"):
-        py_config["data_collector"][
-            "collector_directory"
-        ] = prepare_pytest_item_data_dir(
-            item=item,
-            base_directory=py_config["data_collector"]["data_collector_base_directory"],
-            subdirectory_name="setup",
-        )
+    set_up_pytest_runtest_phase(item=item, phase="SETUP")
 
 
 def pytest_sessionfinish(session, exitstatus):
@@ -140,27 +131,11 @@ def pytest_sessionfinish(session, exitstatus):
 
 
 def pytest_runtest_call(item):
-    BASIC_LOGGER.info(f"{separator(symbol_='-', val='CALL')}")
-    if item.session.config.getoption("--data-collector"):
-        py_config["data_collector"][
-            "collector_directory"
-        ] = prepare_pytest_item_data_dir(
-            item=item,
-            base_directory=py_config["data_collector"]["data_collector_base_directory"],
-            subdirectory_name="call",
-        )
+    set_up_pytest_runtest_phase(item=item, phase="CALL")
 
 
 def pytest_runtest_teardown(item):
-    BASIC_LOGGER.info(f"{separator(symbol_='-', val='TEARDOWN')}")
-    if item.session.config.getoption("--data-collector"):
-        py_config["data_collector"][
-            "collector_directory"
-        ] = prepare_pytest_item_data_dir(
-            item=item,
-            base_directory=py_config["data_collector"]["data_collector_base_directory"],
-            subdirectory_name="teardown",
-        )
+    set_up_pytest_runtest_phase(item=item, phase="TEARDOWN")
 
 
 @pytest.fixture(scope="session")
@@ -174,7 +149,9 @@ def junitxml_plugin(request, record_testsuite_property):
 
 def pytest_exception_interact(node, call, report):
     BASIC_LOGGER.error(report.longreprtext)
-    if node.session.config.getoption("--data-collector"):
+    if node.session.config.getoption(
+        "--data-collector"
+    ) and not node.get_closest_marker(name="skip_data_collector"):
         resources_to_collect = [Node]
         base_directory = py_config["data_collector"]["data_collector_base_directory"]
         try:
@@ -187,3 +164,17 @@ def pytest_exception_interact(node, call, report):
         except Exception as exp:
             LOGGER.warning(f"Failed to collect resources: {exp}")
             return
+
+
+def set_up_pytest_runtest_phase(item, phase):
+    BASIC_LOGGER.info(f"{separator(symbol_='-', val=phase)}")
+    if item.session.config.getoption(
+        "--data-collector"
+    ) and not item.get_closest_marker(name="skip_data_collector"):
+        py_config["data_collector"][
+            "collector_directory"
+        ] = prepare_pytest_item_data_dir(
+            item=item,
+            base_directory=py_config["data_collector"]["data_collector_base_directory"],
+            subdirectory_name=phase.lower(),
+        )
