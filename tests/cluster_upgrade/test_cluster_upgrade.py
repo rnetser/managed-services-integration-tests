@@ -1,5 +1,7 @@
 import logging
 
+import pytest
+
 from tests.cluster_upgrade.utils import (
     get_clusterversion,
     wait_for_cluster_version_state_and_version,
@@ -9,6 +11,7 @@ from tests.cluster_upgrade.utils import (
 LOGGER = logging.getLogger(__name__)
 
 
+@pytest.mark.upgrade
 def test_cluster_upgrade(
     cluster,
     target_version_in_available_upgrades,

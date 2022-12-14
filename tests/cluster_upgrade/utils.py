@@ -34,7 +34,7 @@ def get_upgrade_next_run_time():
 def wait_for_cluster_version_state_and_version(cluster_version, target_ocp_version):
     def _cluster_version_state_and_version(_cluster_version, _target_ocp_version):
         cluster_version_status_history = _cluster_version.instance.status.history[0]
-        LOGGER.info(f"clusterversion status.histroy: {cluster_version_status_history}")
+        LOGGER.info(f"clusterversion status.history: {cluster_version_status_history}")
         return (
             cluster_version_status_history.state == _cluster_version.Status.COMPLETED
             and cluster_version_status_history.version == target_ocp_version

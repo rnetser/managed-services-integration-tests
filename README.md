@@ -43,7 +43,7 @@ poetry update openshift-python-wrapper
 This project runs tests against an OCP cluster running on OSD / ROSA.
 Export the cluster's kubeconfig file as KUBECONFIG
 ```bash
-ocm get clusters -p search="name like '"<clustrer name>"%'" | jq -r  '.items | .[] | .id' | xargs -I {} ocm get /api/clusters_mgmt/v1/clusters/{}/credentials | jq -r .kubeconfig > ~/kubeconfig ; export KUBECONFIG=~/kubeconfig
+ocm get clusters -p search="name like '"<cluster name>"%'" | jq -r  '.items | .[] | .id' | xargs -I {} ocm get /api/clusters_mgmt/v1/clusters/{}/credentials | jq -r .kubeconfig > ~/kubeconfig ; export KUBECONFIG=~/kubeconfig
 ```
 
 ### Logging
@@ -74,7 +74,14 @@ poetry run pytest .... --data-collector=data-collector.yaml
 Logs will be available under tests-collected-info/ folder.
 
 #### Cluster upgrade tests
-`TODO`
+
+To run the cluster upgrade test, you will need to provide the cluster name and the OCP target version.
+
+Example:
+poetry run pytest -m upgrade --ocp-target-version 4.10.35 --cluster-name <cluster name> --data-collector=<path to data collector yaml>
+
+If running against a production cluster, add:
+--tc=api_server:production
 
 ### Setting log level in command line
 
