@@ -355,7 +355,7 @@ requests = "*"
 
 [[package]]
 name = "openshift-python-utilities"
-version = "4.12.7"
+version = "4.12.8"
 description = "Wrapper around https://github.com/openshift/openshift-python-utilities"
 category = "main"
 optional = false
@@ -370,7 +370,7 @@ PyYAML = "*"
 
 [[package]]
 name = "openshift-python-wrapper"
-version = "4.12.14"
+version = "4.12.20"
 description = "Wrapper around https://github.com/openshift/openshift-restclient-python"
 category = "main"
 optional = false
@@ -931,10 +931,10 @@ openshift-cluster-management-python-wrapper = [
     {file = "openshift-cluster-management-python-wrapper-1.0.1.tar.gz", hash = "sha256:aba9213931735c1ab079de86c37716fe6e7729da0e1605287cc04097aba9993b"},
 ]
 openshift-python-utilities = [
-    {file = "openshift-python-utilities-4.12.7.tar.gz", hash = "sha256:ce1fd477f8df5929a3d2a74bff67baaff555c8edd724935a9c8e16ecb89b0939"},
+    {file = "openshift-python-utilities-4.12.8.tar.gz", hash = "sha256:cc1a0749644708c228fc6aa9998a7313d519fc3e376b358cab4126d5ffecc9ef"},
 ]
 openshift-python-wrapper = [
-    {file = "openshift-python-wrapper-4.12.14.tar.gz", hash = "sha256:c424db9735c3b67707ff7d022afedcca7ea1894abd7792abe249db06e798b55d"},
+    {file = "openshift-python-wrapper-4.12.20.tar.gz", hash = "sha256:c002892287605aed41d830450624e42381de345e3c79cd24d48baac65eb0119f"},
 ]
 packaging = [
     {file = "packaging-21.3-py3-none-any.whl", hash = "sha256:ef103e05f519cdc783ae24ea4e2e0f508a9c99b2d4969652eed6a2e1ea5bd522"},
