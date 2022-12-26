@@ -23,13 +23,9 @@ BASIC_LOGGER = logging.getLogger("basic")
 
 # pytest fixtures
 def pytest_addoption(parser):
-    storage_group = parser.getgroup(name="Storage")
     data_collector_group = parser.getgroup(name="DataCollector")
     ocm_group = parser.getgroup(name="OCM")
     upgrade_group = parser.getgroup(name="Upgrade")
-
-    # Storage addoption
-    storage_group.addoption("--storage-classes", help="Storage classes to test")
 
     # Data collector group
     data_collector_group.addoption(
@@ -47,11 +43,6 @@ def pytest_addoption(parser):
 
     # Upgrade group
     upgrade_group.addoption("--ocp-target-version", help="cluster OCP target version")
-
-
-def pytest_cmdline_main(config):
-    if config.getoption("--storage-classes"):
-        py_config["storage_classes"] = config.getoption("--storage-classes").split(",")
 
 
 def pytest_sessionstart(session):

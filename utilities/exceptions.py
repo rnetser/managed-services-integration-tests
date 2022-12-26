@@ -1,2 +1,0 @@
-class StorageClassError(Exception):
-    pass
