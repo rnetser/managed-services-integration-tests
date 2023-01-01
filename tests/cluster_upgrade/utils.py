@@ -2,8 +2,11 @@ import logging
 from datetime import datetime, timedelta
 
 from dateutil.tz import tzutc
+from ocp_resources.cluster_operator import ClusterOperator
 from ocp_resources.cluster_version import ClusterVersion
 from ocp_resources.utils import TimeoutExpiredError, TimeoutSampler
+from ocp_utilities.data_collector import collect_resources_yaml_instance
+from pytest_testconfig import py_config
 
 
 LOGGER = logging.getLogger(__name__)
@@ -31,7 +34,9 @@ def get_upgrade_next_run_time():
     return upgrade_next_run_time
 
 
-def wait_for_cluster_version_state_and_version(cluster_version, target_ocp_version):
+def wait_for_cluster_version_state_and_version(
+    cluster_version, target_ocp_version, pytestconfig
+):
     def _cluster_version_state_and_version(_cluster_version, _target_ocp_version):
         cluster_version_status_history = _cluster_version.instance.status.history[0]
         LOGGER.info(f"clusterversion status.history: {cluster_version_status_history}")
@@ -56,11 +61,26 @@ def wait_for_cluster_version_state_and_version(cluster_version, target_ocp_versi
             "Timeout reached while upgrading OCP."
             "clusterversion conditions: {cluster_version.instance.status.conditions}"
         )
-        # TODO: Call collect_resources_for_test from new repo
-        # collect_resources_for_test(resources_to_collect=[ClusterOperator])
+        collect_resources(
+            pytestconfig=pytestconfig,
+            resources_to_collect=[ClusterOperator, ClusterVersion],
+        )
         raise
 
 
 def get_clusterversion(dyn_client):
     for cluster_version in ClusterVersion.get(dyn_client=dyn_client):
         return cluster_version
+
+
+def collect_resources(pytestconfig, resources_to_collect):
+    if pytestconfig.getoption("--data-collector"):
+        base_directory = py_config["data_collector"]["data_collector_base_directory"]
+        try:
+            collect_resources_yaml_instance(
+                resources_to_collect=resources_to_collect, base_directory=base_directory
+            )
+
+        except Exception as exp:
+            LOGGER.warning(f"Failed to collect resources: {exp}")
+            return
