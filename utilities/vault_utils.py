@@ -6,12 +6,11 @@ import urllib3
 from hvac import Client as hvacClient
 from urllib3.exceptions import InsecureRequestWarning
 
-from utilities.constants import MPS_QE
-
 
 urllib3.disable_warnings(InsecureRequestWarning)
 
 LOGGER = logging.getLogger(__name__)
+MPS_QE = "mps-qe"
 
 
 def get_vault_config(path):

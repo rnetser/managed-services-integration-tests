@@ -21,7 +21,7 @@ RUN curl https://mirror.openshift.com/pub/openshift-v4/clients/oc/latest/linux/o
     rm -rf /usr/local/bin/README.md /tmp/oc.tar.gz && \
     python3 -m pip install pip --upgrade && \
     python3 -m pip install poetry && \
-    poetry config cache-dir /managed-services-integration-framework && \
+    poetry config cache-dir /managed-services-integration-tests && \
     poetry config virtualenvs.in-project true && \
     poetry config --list && \
     poetry env remove --all && \
