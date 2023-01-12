@@ -37,7 +37,7 @@ def kafka_mgmt_client(ocm_base_api_url, access_token):
         host=ocm_base_api_url,
         access_token=access_token,
     )
-    with rhoas_kafka_mgmt_sdk.ApiClient(configuration) as api_client:
+    with rhoas_kafka_mgmt_sdk.ApiClient(configuration=configuration) as api_client:
         yield api_client
 
 
@@ -70,7 +70,9 @@ def smart_events_mgmt_client(ocm_base_api_url, access_token):
         host=ocm_base_api_url,
         access_token=access_token,
     )
-    with rhoas_smart_events_mgmt_sdk.ApiClient(configuration=configuration) as api_client:
+    with rhoas_smart_events_mgmt_sdk.ApiClient(
+        configuration=configuration
+    ) as api_client:
         yield api_client
 
 
@@ -86,7 +88,9 @@ def service_accounts_mgmt_client(access_token):
         host="https://sso.redhat.com/auth/realms/redhat-external",
         access_token=access_token,
     )
-    with rhoas_service_accounts_mgmt_sdk.ApiClient(configuration=configuration) as api_client:
+    with rhoas_service_accounts_mgmt_sdk.ApiClient(
+        configuration=configuration
+    ) as api_client:
         yield api_client
 
 
@@ -105,7 +109,9 @@ def service_registry_mgmt_client(ocm_base_api_url, access_token):
         access_token=access_token,
         discard_unknown_keys=True,
     )
-    with rhoas_service_registry_mgmt_sdk.ApiClient(configuration=configuration) as api_client:
+    with rhoas_service_registry_mgmt_sdk.ApiClient(
+        configuration=configuration
+    ) as api_client:
         yield api_client
 
 
