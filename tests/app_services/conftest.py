@@ -37,7 +37,8 @@ def kafka_mgmt_client(ocm_base_api_url, access_token):
         host=ocm_base_api_url,
         access_token=access_token,
     )
-    return rhoas_kafka_mgmt_sdk.ApiClient(configuration=configuration)
+    with rhoas_kafka_mgmt_sdk.ApiClient(configuration) as api_client:
+        yield api_client
 
 
 @pytest.fixture(scope="session")
@@ -53,7 +54,8 @@ def connector_mgmt_client(ocm_base_api_url, access_token):
         access_token=access_token,
         discard_unknown_keys=True,
     )
-    return rhoas_connector_mgmt_sdk.ApiClient(configuration=configuration)
+    with rhoas_connector_mgmt_sdk.ApiClient(configuration=configuration) as api_client:
+        yield api_client
 
 
 @pytest.fixture(scope="session")
@@ -68,7 +70,8 @@ def smart_events_mgmt_client(ocm_base_api_url, access_token):
         host=ocm_base_api_url,
         access_token=access_token,
     )
-    return rhoas_smart_events_mgmt_sdk.ApiClient(configuration=configuration)
+    with rhoas_smart_events_mgmt_sdk.ApiClient(configuration=configuration) as api_client:
+        yield api_client
 
 
 @pytest.fixture(scope="session")
@@ -83,7 +86,8 @@ def service_accounts_mgmt_client(access_token):
         host="https://sso.redhat.com/auth/realms/redhat-external",
         access_token=access_token,
     )
-    return rhoas_service_accounts_mgmt_sdk.ApiClient(configuration=configuration)
+    with rhoas_service_accounts_mgmt_sdk.ApiClient(configuration=configuration) as api_client:
+        yield api_client
 
 
 @pytest.fixture(scope="session")
@@ -101,7 +105,8 @@ def service_registry_mgmt_client(ocm_base_api_url, access_token):
         access_token=access_token,
         discard_unknown_keys=True,
     )
-    return rhoas_service_registry_mgmt_sdk.ApiClient(configuration=configuration)
+    with rhoas_service_registry_mgmt_sdk.ApiClient(configuration=configuration) as api_client:
+        yield api_client
 
 
 @pytest.fixture(scope="session")
