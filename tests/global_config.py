@@ -1,7 +1,7 @@
 global config
 
 
-api_server = "stage"
+api_server = "production"
 
 # Add the above configuration to py_config config dict
 for _dir in dir():
