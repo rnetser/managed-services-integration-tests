@@ -1,8 +1,16 @@
 import logging
 
 from ocm_python_wrapper.ocm_client import OCMPythonClient
-from ocp_utilities.exceptions import NodeNotReadyError, NodeUnschedulableError
-from ocp_utilities.infra import assert_nodes_ready, assert_nodes_schedulable
+from ocp_utilities.exceptions import (
+    NodeNotReadyError,
+    NodeUnschedulableError,
+    PodsFailedOrPendingError,
+)
+from ocp_utilities.infra import (
+    assert_nodes_ready,
+    assert_nodes_schedulable,
+    assert_pods_failed_or_pending,
+)
 from pytest_testconfig import py_config
 
 from utilities.pytest_utils import exit_pytest_execution
@@ -13,6 +21,7 @@ LOGGER = logging.getLogger(__name__)
 
 def cluster_sanity(
     nodes,
+    pods,
     junitxml_property,
 ):
     """
@@ -30,8 +39,9 @@ def cluster_sanity(
         LOGGER.info("Check nodes sanity.")
         assert_nodes_ready(nodes=nodes)
         assert_nodes_schedulable(nodes=nodes)
+        assert_pods_failed_or_pending(pods=pods)
 
-    except (NodeNotReadyError, NodeUnschedulableError) as ex:
+    except (NodeNotReadyError, NodeUnschedulableError, PodsFailedOrPendingError) as ex:
         exit_pytest_execution(
             filename=exceptions_filename,
             message=ex.args[0],
