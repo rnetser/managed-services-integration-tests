@@ -128,4 +128,5 @@ def kafka_topics(kafka_instance_client):
                 ),
             )
             kafka_topics_api_instance.create_topic(new_topic_input=new_topic_input)
+
     return kafka_topics
