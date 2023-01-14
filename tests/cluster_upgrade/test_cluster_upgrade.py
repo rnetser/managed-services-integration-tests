@@ -27,6 +27,6 @@ def test_cluster_upgrade(
     wait_for_cluster_version_state_and_version(
         cluster_version=get_clusterversion(dyn_client=cluster.ocp_client),
         target_ocp_version=ocp_target_version,
-        pytestconfig=pytestconfig,
+        collect_data=pytestconfig.getoption("--data-collector"),
     )
     cluster.wait_for_ocm_cluster_version(ocp_target_version=ocp_target_version)

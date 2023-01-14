@@ -1,4 +1,3 @@
-import logging
 import os
 
 import pytest
@@ -9,10 +8,6 @@ from pytest_testconfig import py_config
 
 from utilities.infra import get_ocm_client
 from utilities.vault_utils import get_vault_config
-
-
-LOGGER = logging.getLogger(__name__)
-BASIC_LOGGER = logging.getLogger("basic")
 
 
 @pytest.fixture(scope="session")
@@ -30,9 +25,9 @@ def nodes(admin_client):
 
 @pytest.fixture(scope="session")
 def cluster_name(request):
-    cluster_name = request.session.config.getoption(name="--cluster-name")
-    assert cluster_name, "Cluster name is missing from cmdline"
-    return cluster_name
+    assert request.session.config.getoption(
+        name="--cluster-name"
+    ), "Cluster name is missing from cmdline"
 
 
 @pytest.fixture(scope="session")
