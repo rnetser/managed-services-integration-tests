@@ -25,9 +25,9 @@ def nodes(admin_client):
 
 @pytest.fixture(scope="session")
 def cluster_name(request):
-    assert request.session.config.getoption(
-        name="--cluster-name"
-    ), "Cluster name is missing from cmdline"
+    cluster_name = request.session.config.getoption(name="--cluster-name")
+    assert cluster_name, "Cluster name is missing from cmdline"
+    return cluster_name
 
 
 @pytest.fixture(scope="session")
