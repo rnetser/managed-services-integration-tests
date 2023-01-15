@@ -16,10 +16,7 @@ RUN yum -y install epel-release && \
 COPY / managed-services-integration-tests/
 WORKDIR managed-services-integration-tests
 
-RUN curl -vvv -k https://mirror.openshift.com/pub/openshift-v4/clients/oc/latest/linux/oc.tar.gz -o /tmp/oc.tar.gz && \
-    tar -xvf /tmp/oc.tar.gz --directory=/usr/bin/ && \
-    rm -rf /usr/local/bin/README.md /tmp/oc.tar.gz && \
-    python3 -m pip install pip --upgrade && \
+RUN python3 -m pip install pip --upgrade && \
     python3 -m pip install poetry && \
     poetry config cache-dir /managed-services-integration-tests && \
     poetry config virtualenvs.in-project true && \
