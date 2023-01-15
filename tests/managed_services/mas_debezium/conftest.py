@@ -92,15 +92,31 @@ def kafka_instance_sa(kafka_instance_client, service_accounts_api_instance):
     # via AclBinding instance
     # TODO: move full acl creating procedure to a utilities module
     acl_api_instance = acls_api.AclsApi(api_client=kafka_instance_client)
+    resource_type = (AclResourceType("TOPIC"),)
+    resource_name = ("*",)
+    pattern_type = (AclPatternType("LITERAL"),)
+    permission = (AclPermissionType("ALLOW"),)
+    principal = (f"User:{kafka_sa_create_api.id}",)
+    operation = (AclOperation("ALL"),)
     acl_binding = AclBinding(
-        resource_type=AclResourceType("TOPIC"),
-        resource_name="*",
-        pattern_type=AclPatternType("LITERAL"),
-        permission=AclPermissionType("ALLOW"),
-        principal=f"User:{kafka_sa_create_api.id}",
-        operation=AclOperation("ALL"),
+        resource_type=resource_type,
+        resource_name=resource_name,
+        pattern_type=pattern_type,
+        permission=permission,
+        principal=principal,
+        operation=operation,
     )
     acl_api_instance.create_acl(acl_binding=acl_binding)
+
+    kafka_sa_acl = acl_api_instance.get_acls(
+        resource_type=resource_type,
+        resource_name=resource_name,
+        pattern_type=pattern_type,
+        permission=permission,
+        principal=principal,
+        operation=operation,
+    )
+    assert kafka_sa_acl.items[0].principal == principal
 
     yield kafka_sa_create_api
 
