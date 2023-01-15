@@ -5,10 +5,8 @@ import pytest
 from ocm_python_wrapper.cluster import Cluster
 from ocp_resources.node import Node
 from ocp_resources.resource import get_client
-from pytest_testconfig import py_config
 
 from utilities.infra import get_ocm_client
-from utilities.vault_utils import get_vault_config
 
 
 LOGGER = logging.getLogger(__name__)
@@ -45,21 +43,9 @@ def ocm_client_scope_session(ocm_token):
     return get_ocm_client(token=ocm_token)
 
 
-@pytest.fixture(scope="class")
-def ocm_client_scope_class(ocm_token):
-    return get_ocm_client(token=ocm_token)
-
-
 @pytest.fixture(scope="session")
 def ocm_token():
-    token = os.getenv("OCM_TOKEN")
-    if token:
-        return token
-    ocm_token_key = (
-        "ocm_api_token"
-        if py_config["api_server"] == "production"
-        else "ocm_stage_api_token"
-    )
-    return get_vault_config(path="rh-interop-qe-ms-account")["data"]["data"][
-        ocm_token_key
-    ]
+    ocm_token_env_var_name = "OCM_TOKEN"
+    token = os.getenv(ocm_token_env_var_name)
+    assert token, f"{ocm_token_env_var_name} environment variable is not set."
+    return token

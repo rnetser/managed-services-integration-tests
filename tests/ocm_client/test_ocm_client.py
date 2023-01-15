@@ -10,8 +10,8 @@ LOGGER = logging.getLogger(__name__)
 
 class TestOCMPythonClient:
     @pytest.mark.smoke
-    def test_ocm_client(self, ocm_client_scope_class):
-        versions = ocm_client_scope_class.api_clusters_mgmt_v1_versions_get()
+    def test_ocm_client(self, ocm_client_scope_session):
+        versions = ocm_client_scope_session.api_clusters_mgmt_v1_versions_get()
         assert versions, "Failed to get versions"
 
     def test_cluster_instance(self, cluster):
