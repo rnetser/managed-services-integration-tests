@@ -4,8 +4,12 @@ from rhoas_kafka_instance_sdk.api import records_api
 from rhoas_kafka_instance_sdk.model.record import Record
 
 
-@pytest.mark.debezium_cdc
-def test_kafka_topics(kafka_instance, kafka_instance_client, kafka_topics):
+pytestmark = pytest.mark.mas_debezium
+
+
+def test_kafka_topics(
+    kafka_instance, kafka_instance_client, kafka_instance_sa, kafka_topics
+):
     """
     Test for managed kafka resources setup,
     usage and teardown via rhoas sdk
@@ -23,5 +27,3 @@ def test_kafka_topics(kafka_instance, kafka_instance_client, kafka_topics):
         topic_name=topic_name, partition=PARTITION
     )
     assert consume_topic_res[0].value == record_msg
-
-    return
