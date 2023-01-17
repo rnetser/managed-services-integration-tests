@@ -139,9 +139,14 @@ poetry run pip install pycurl --no-cache-dir
 ```
 
 # Running with OCM client
-Either export `ANSIBLE_HASHI_VAULT_SECRET_ID` when working locally or set `OCM_TOKEN` env variable in test container
-
-# Running RHOAS API tests
+Export `OCM_TOKEN` env variable locally or in test container
 ```bash
-export ANSIBLE_HASHI_VAULT_SECRET_ID=<secret id>
+export OCM_TOKEN="production or stage OCM token"
+```
+
+# Overwrite global_config execution configuration.
+You can overwrite the api server defined in global_config.py by passing the following in command line:
+For example:
+```bash
+poetry run pytest ... --tc=api_server:stage
 ```
