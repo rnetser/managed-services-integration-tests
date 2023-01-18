@@ -15,13 +15,12 @@ TIMEOUT_180MIN = 180 * 60
 
 
 def cluster_upgrade_policy_dict(target_version):
-    upgrade_next_run_time = get_upgrade_next_run_time()
     return {
         "kind": "UpgradePolicy",
         "schedule_type": "manual",
         "upgrade_type": "OSD",
         "version": target_version,
-        "next_run": upgrade_next_run_time,
+        "next_run": get_upgrade_next_run_time(),
     }
 
 
@@ -35,7 +34,7 @@ def get_upgrade_next_run_time():
 
 
 def wait_for_cluster_version_state_and_version(
-    cluster_version, target_ocp_version, pytestconfig
+    cluster_version, target_ocp_version, collect_data
 ):
     def _cluster_version_state_and_version(_cluster_version, _target_ocp_version):
         cluster_version_status_history = _cluster_version.instance.status.history[0]
@@ -62,7 +61,7 @@ def wait_for_cluster_version_state_and_version(
             "clusterversion conditions: {cluster_version.instance.status.conditions}"
         )
         collect_resources(
-            pytestconfig=pytestconfig,
+            collect_data=collect_data,
             resources_to_collect=[ClusterOperator, ClusterVersion],
         )
         raise
@@ -73,14 +72,9 @@ def get_clusterversion(dyn_client):
         return cluster_version
 
 
-def collect_resources(pytestconfig, resources_to_collect):
-    if pytestconfig.getoption("--data-collector"):
+def collect_resources(collect_data, resources_to_collect):
+    if collect_data:
         base_directory = py_config["data_collector"]["data_collector_base_directory"]
-        try:
-            collect_resources_yaml_instance(
-                resources_to_collect=resources_to_collect, base_directory=base_directory
-            )
-
-        except Exception as exp:
-            LOGGER.warning(f"Failed to collect resources: {exp}")
-            return
+        collect_resources_yaml_instance(
+            resources_to_collect=resources_to_collect, base_directory=base_directory
+        )

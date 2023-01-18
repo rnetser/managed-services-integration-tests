@@ -1,4 +1,3 @@
-import logging
 import os
 
 import pytest
@@ -7,10 +6,6 @@ from ocp_resources.node import Node
 from ocp_resources.resource import get_client
 
 from utilities.infra import get_ocm_client
-
-
-LOGGER = logging.getLogger(__name__)
-BASIC_LOGGER = logging.getLogger("basic")
 
 
 @pytest.fixture(scope="session")

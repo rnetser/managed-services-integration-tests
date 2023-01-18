@@ -7,7 +7,7 @@ IMAGE_TAG ?= "latest"
 
 FULL_OPERATOR_IMAGE ?= "$(IMAGE_REGISTRY)/$(REGISTRY_NAMESPACE)/$(OPERATOR_IMAGE_NAME):$(IMAGE_TAG)"
 
-all: check poetry run_tests build-container push-container
+all: check poetry run_cluster_sanity_tests build-container push-container
 
 check:
 	tox
@@ -17,7 +17,7 @@ poetry:
 	poetry install
 	poetry show
 
-run_tests:
+run_cluster_sanity_tests:
 	poetry run pytest tests/cluster_sanity
 
 build-container:
