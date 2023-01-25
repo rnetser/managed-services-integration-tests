@@ -1,5 +1,7 @@
+import shlex
+
 import pytest
-from constants import PARTITION
+from constants import CONSUMER_POD, PARTITION
 from rhoas_kafka_instance_sdk.api import records_api
 from rhoas_kafka_instance_sdk.model.record import Record
 
@@ -7,9 +9,7 @@ from rhoas_kafka_instance_sdk.model.record import Record
 pytestmark = pytest.mark.mas_debezium
 
 
-def test_kafka_topics(
-    kafka_instance, kafka_instance_client, kafka_instance_sa, kafka_topics
-):
+def test_kafka_topics(kafka_instance_client, kafka_topics, consumer_pod):
     """
     Test for managed kafka resources setup,
     usage and teardown via rhoas sdk
@@ -21,9 +21,18 @@ def test_kafka_topics(
     record = Record(value=record_msg, partition=PARTITION)
     records_api_client.produce_record(topic_name=topic_name, record=record)
 
-    # Consume from avro.inventory.customers topic
-    # TODO: raises ApiValueError (known bug) work with Dimitri to resolve this
-    consume_topic_res = records_api_client.consume_records(
-        topic_name=topic_name, partition=PARTITION
+    # Consume from avro.inventory.customers topic using kcat
+    consume_command = (
+        "kcat -b $BOOTSTRAP_SERVER "
+        "-X sasl.mechanisms=PLAIN "
+        "-X security.protocol=SASL_SSL "
+        '-X sasl.username="$CLIENT_ID" '
+        '-X sasl.password="$CLIENT_SECRET" '
+        "-t avro.inventory.customers -C -e"
     )
-    assert consume_topic_res[0].value == record_msg
+    # TODO: command execution fails at args parsing
+    kafka_event = consumer_pod.execute(
+        command=shlex.split(s=consume_command),
+        container=CONSUMER_POD,
+    )
+    assert kafka_event == record_msg, "Failed to consume the correct record"

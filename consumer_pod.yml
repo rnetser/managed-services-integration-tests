@@ -1,0 +1,26 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kafka-consumer-pod
+  namespace: mas-debezium
+spec:
+  containers:
+    - name: kafka-consumer-pod
+      image: edenhill/kcat:1.7.1
+      command:
+        - "kcat"
+        - "-b"
+        - "$(BOOTSTRAP_SERVER)"
+        - "-X"
+        - "sasl.mechanisms=PLAIN"
+        - "-X"
+        - "security.protocol=SASL_SSL"
+        - "-X"
+        - "sasl.username=\"$(CLIENT_ID)\""
+        - "-X"
+        - "sasl.password=\"$CLIENT_SECRET\""
+        - "-t"
+        - "avro.inventory.customers"
+        - "-C"
+        - "-e"

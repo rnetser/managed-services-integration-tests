@@ -31,6 +31,7 @@ shortuuid = "*"
 redhat-qe-cloud-tools = "*"
 boto3 = "*"
 
+
 [tool.poetry.dev-dependencies]
 ipdb = "*"
 ipython = "*"

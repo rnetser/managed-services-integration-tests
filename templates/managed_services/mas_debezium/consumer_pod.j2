@@ -1,0 +1,33 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ consumer_pod_name }}
+  namespace: {{ debezium_namespace }}
+spec:
+  containers:
+    - name: {{ consumer_pod_name }}
+      image: {{ consumer_image }}
+      env:
+        - name: BOOTSTRAP_SERVER
+          value: {{ kafka_bootstrap_url }}
+        - name: CLIENT_ID
+          value: {{ kafka_sa_client_id }}
+        - name: CLIENT_SECRET
+          value: {{ kafka_sa_client_secret }}
+      command:
+        - "kcat"
+        - "-b"
+        - "$(BOOTSTRAP_SERVER)"
+        - "-X"
+        - "sasl.mechanisms=PLAIN"
+        - "-X"
+        - "security.protocol=SASL_SSL"
+        - "-X"
+        - "sasl.username=$(CLIENT_ID)"
+        - "-X"
+        - "sasl.password=$(CLIENT_SECRET)"
+        - "-t"
+        - "avro.inventory.customers"
+        - "-C"
+        - "-e"
