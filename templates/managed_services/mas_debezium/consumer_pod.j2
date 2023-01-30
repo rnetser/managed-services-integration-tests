@@ -15,6 +15,8 @@ spec:
           value: {{ kafka_sa_client_id }}
         - name: CLIENT_SECRET
           value: {{ kafka_sa_client_secret }}
+        - name: TEST_TOPIC
+          value: {{ test_kafka_topic }}
       command:
         - "kcat"
         - "-b"
@@ -28,6 +30,6 @@ spec:
         - "-X"
         - "sasl.password=$(CLIENT_SECRET)"
         - "-t"
-        - "avro.inventory.customers"
+        - "$(TEST_TOPIC)"
         - "-C"
         - "-e"

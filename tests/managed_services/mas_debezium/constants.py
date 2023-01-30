@@ -5,7 +5,8 @@ KAFKA_REGION = "us-east-1"
 KAFKA_PLAN = "standard.x1"
 KAFKA_TIMEOUT = 360
 KAFKA_SA_NAME = "ms-kafka-sa"
-PARTITION = 0
+TEST_RECORD = "This is a topic test record"
+TEST_TOPIC = "avro.inventory.customers"
 KAFKA_TOPICS = [
     {
         "name": "debezium_topics",
