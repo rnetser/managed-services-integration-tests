@@ -35,7 +35,7 @@ from rhoas_service_accounts_mgmt_sdk.model.service_account_create_request_data i
     ServiceAccountCreateRequestData,
 )
 
-from utilities.template_utils import get_resource_j2_template, render_yaml_from_dict
+from utilities.template_utils import render_template_from_dict
 
 
 LOGGER = logging.getLogger(__name__)
@@ -104,6 +104,13 @@ def kafka_instance_sa(kafka_instance_client, service_accounts_api_instance):
     ), f"Failed to create service-account for kafka. API response:\n{kafka_sa}"
     LOGGER.info(f"kafka service-account:\n{kafka_sa}")
 
+    yield kafka_sa
+
+    service_accounts_api_instance.delete_service_account(id=kafka_sa.id, async_req=True)
+
+
+@pytest.fixture(scope="session")
+def kafka_sa_acl(kafka_instance_client, kafka_instance_sa):
     # Binding the service-account instance to kafka with privileges
     # via AclBinding instance
     acl_api_instance = acls_api.AclsApi(api_client=kafka_instance_client)
@@ -113,7 +120,7 @@ def kafka_instance_sa(kafka_instance_client, service_accounts_api_instance):
     resource_name = "*"
     pattern_type = AclPatternType("LITERAL")
     permission = AclPermissionType("ALLOW")
-    principal = f"User:{kafka_sa.id}"
+    principal = f"User:{kafka_instance_sa.id}"
     operation = AclOperation("ALL")
 
     for resource in resources:
@@ -129,7 +136,7 @@ def kafka_instance_sa(kafka_instance_client, service_accounts_api_instance):
         acl_api_instance.create_acl(acl_binding=acl_binding)
 
         # validating current acl created
-        kafka_sa_acl = acl_api_instance.get_acls(
+        sa_acl = acl_api_instance.get_acls(
             resource_type=resource_type,
             resource_name=resource_name,
             pattern_type=pattern_type,
@@ -138,11 +145,7 @@ def kafka_instance_sa(kafka_instance_client, service_accounts_api_instance):
             operation=operation,
             async_req=True,
         )
-        assert kafka_sa_acl
-
-    yield kafka_sa
-
-    service_accounts_api_instance.delete_service_account(id=kafka_sa.id, async_req=True)
+        assert sa_acl, f"Failed to bind a kafka acl for {resource} resource type"
 
 
 @pytest.fixture(scope="session")
@@ -164,12 +167,10 @@ def kafka_topics(kafka_instance_client):
             )
             kafka_topics_api_instance.create_topic(new_topic_input=new_topic_input)
 
-    # Produce to avro.inventory.customers topic
+    # Produce to tested topic
     records_api_client = records_api.RecordsApi(api_client=kafka_instance_client)
     record = Record(value=TEST_RECORD)
     records_api_client.produce_record(topic_name=TEST_TOPIC, record=record)
-
-    return kafka_topics
 
 
 @pytest.fixture(scope="session")
@@ -182,12 +183,9 @@ def debezium_namespace(admin_client):
 
 
 @pytest.fixture(scope="session")
-def consumer_pod(admin_client, kafka_instance, kafka_instance_sa, debezium_namespace):
-    pod_manifest_template = get_resource_j2_template(
-        template_name="managed_services/mas_debezium/consumer_pod.j2"
-    )
-    pod_manifest_yaml = render_yaml_from_dict(
-        template=pod_manifest_template,
+def consumer_pod_yaml(kafka_instance, kafka_instance_sa, debezium_namespace):
+    pod_manifest_yaml = render_template_from_dict(
+        template_name="managed_services/mas_debezium/consumer_pod.j2",
         _dict={
             "debezium_namespace": debezium_namespace.name,
             "consumer_pod_name": CONSUMER_POD,
@@ -198,9 +196,13 @@ def consumer_pod(admin_client, kafka_instance, kafka_instance_sa, debezium_names
             "test_kafka_topic": TEST_TOPIC,
         },
     )
+    return pod_manifest_yaml
 
+
+@pytest.fixture(scope="session")
+def consumer_pod(admin_client, consumer_pod_yaml):
     with cluster_resource(Pod)(
-        client=admin_client, yaml_file=pod_manifest_yaml
+        client=admin_client, yaml_file=consumer_pod_yaml
     ) as consumer:
         consumer.wait_for_status(status=Pod.Status.RUNNING, timeout=WAIT_STATUS_TIMEOUT)
         yield consumer

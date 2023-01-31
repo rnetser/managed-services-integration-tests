@@ -5,7 +5,7 @@ from constants import TEST_RECORD
 pytestmark = pytest.mark.mas_debezium
 
 
-def test_kafka_topics(kafka_instance_client, kafka_topics, consumer_pod):
+def test_kafka_topics(kafka_instance_client, kafka_topics, kafka_sa_acl, consumer_pod):
     """
     Test for managed kafka resources setup,
     usage and teardown via rhoas sdk
