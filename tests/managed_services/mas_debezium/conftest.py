@@ -43,7 +43,7 @@ WAIT_STATUS_TIMEOUT = 120
 
 
 @pytest.fixture(scope="session")
-def kafka_instance(kafka_mgmt_api_instance):
+def kafka_instance_create(kafka_mgmt_api_instance):
     _async = True
     kafka_request_payload = KafkaRequestPayload(
         cloud_provider=KAFKA_CLOUD_PROVIDER,
@@ -59,31 +59,38 @@ def kafka_instance(kafka_mgmt_api_instance):
         kafka_create_api.status == "accepted"
     ), f"Failed to create a kafka instance. API response:\n{kafka_create_api}"
 
+    yield kafka_create_api
+
+    kafka_mgmt_api_instance.delete_kafka_by_id(
+        async_req=True, _async=_async, id=kafka_create_api.id
+    )
+
+
+@pytest.fixture(scope="session")
+def kafka_instance_ready(kafka_mgmt_api_instance, kafka_instance_create):
     kafka_status_samples = TimeoutSampler(
         wait_timeout=KAFKA_TIMEOUT,
         sleep=10,
         func=lambda: kafka_mgmt_api_instance.get_kafka_by_id(
-            id=kafka_create_api.id
+            id=kafka_instance_create.id
         ).status
         == "ready",
     )
     for sample in kafka_status_samples:
         if sample:
             break
-    kafka_ready_api = kafka_mgmt_api_instance.get_kafka_by_id(id=kafka_create_api.id)
+    kafka_ready_api = kafka_mgmt_api_instance.get_kafka_by_id(
+        id=kafka_instance_create.id
+    )
     LOGGER.info(f"Kafka instance is ready:\n{kafka_ready_api}")
     yield kafka_ready_api
 
-    kafka_mgmt_api_instance.delete_kafka_by_id(
-        async_req=True, _async=_async, id=kafka_ready_api.id
-    )
-
 
 @pytest.fixture(scope="session")
-def kafka_instance_client(kafka_instance, access_token):
+def kafka_instance_client(kafka_instance_ready, access_token):
     # https://github.com/redhat-developer/app-services-sdk-python/tree/main/sdks/kafka_instance_sdk
     configuration = rhoas_kafka_instance_sdk.Configuration(
-        host=kafka_instance.admin_api_server_url, access_token=access_token
+        host=kafka_instance_ready.admin_api_server_url, access_token=access_token
     )
 
     with rhoas_kafka_instance_sdk.ApiClient(configuration=configuration) as api_client:
@@ -183,14 +190,14 @@ def debezium_namespace(admin_client):
 
 
 @pytest.fixture(scope="session")
-def consumer_pod_yaml(kafka_instance, kafka_instance_sa, debezium_namespace):
+def consumer_pod_yaml(kafka_instance_ready, kafka_instance_sa, debezium_namespace):
     pod_manifest_yaml = render_template_from_dict(
         template_name="managed_services/mas_debezium/consumer_pod.j2",
         _dict={
             "debezium_namespace": debezium_namespace.name,
             "consumer_pod_name": CONSUMER_POD,
             "consumer_image": CONSUMER_IMAGE,
-            "kafka_bootstrap_url": kafka_instance.bootstrap_server_host,
+            "kafka_bootstrap_url": kafka_instance_ready.bootstrap_server_host,
             "kafka_sa_client_id": kafka_instance_sa.id,
             "kafka_sa_client_secret": kafka_instance_sa.secret,
             "test_kafka_topic": TEST_TOPIC,

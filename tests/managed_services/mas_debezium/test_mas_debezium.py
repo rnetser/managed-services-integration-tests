@@ -10,6 +10,6 @@ def test_kafka_topics(kafka_instance_client, kafka_topics, kafka_sa_acl, consume
     Test for managed kafka resources setup,
     usage and teardown via rhoas sdk
     """
-    # Consume from avro.inventory.customers topic using kcat
+    # Get consumed record from test topic via kcat pod
     kafka_event = consumer_pod.log()
     assert kafka_event.startswith(TEST_RECORD), "Failed to consume the correct record"
