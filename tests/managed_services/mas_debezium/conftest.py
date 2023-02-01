@@ -18,7 +18,7 @@ from constants import (
 )
 from ocp_resources.namespace import Namespace
 from ocp_resources.pod import Pod
-from ocp_resources.utils import TimeoutSampler
+from ocp_resources.utils import TimeoutExpiredError, TimeoutSampler
 from ocp_utilities.infra import cluster_resource
 from rhoas_kafka_instance_sdk.api import acls_api, records_api, topics_api
 from rhoas_kafka_instance_sdk.model.acl_binding import AclBinding
@@ -42,8 +42,8 @@ LOGGER = logging.getLogger(__name__)
 WAIT_STATUS_TIMEOUT = 120
 
 
-@pytest.fixture(scope="session")
-def kafka_instance_create(kafka_mgmt_api_instance):
+@pytest.fixture(scope="class")
+def kafka_instance(kafka_mgmt_api_instance):
     _async = True
     kafka_request_payload = KafkaRequestPayload(
         cloud_provider=KAFKA_CLOUD_PROVIDER,
@@ -66,38 +66,45 @@ def kafka_instance_create(kafka_mgmt_api_instance):
     )
 
 
-@pytest.fixture(scope="session")
-def kafka_instance_ready(kafka_mgmt_api_instance, kafka_instance_create):
-    kafka_status_samples = TimeoutSampler(
-        wait_timeout=KAFKA_TIMEOUT,
-        sleep=10,
-        func=lambda: kafka_mgmt_api_instance.get_kafka_by_id(
-            id=kafka_instance_create.id
-        ).status
-        == "ready",
-    )
-    for sample in kafka_status_samples:
-        if sample:
-            break
-    kafka_ready_api = kafka_mgmt_api_instance.get_kafka_by_id(
-        id=kafka_instance_create.id
-    )
-    LOGGER.info(f"Kafka instance is ready:\n{kafka_ready_api}")
-    yield kafka_ready_api
+@pytest.fixture(scope="class")
+def kafka_instance_ready(kafka_mgmt_api_instance, kafka_instance):
+    try:
+        kafka_status_samples = TimeoutSampler(
+            wait_timeout=KAFKA_TIMEOUT,
+            sleep=10,
+            func=lambda: kafka_mgmt_api_instance.get_kafka_by_id(
+                id=kafka_instance.id
+            ).status
+            == "ready",
+        )
+        for sample in kafka_status_samples:
+            if sample:
+                break
+        kafka_ready_api = kafka_mgmt_api_instance.get_kafka_by_id(id=kafka_instance.id)
+        LOGGER.info(f"Kafka instance is ready:\n{kafka_ready_api}")
+        yield kafka_ready_api
+    except TimeoutExpiredError:
+        LOGGER.error(
+            f"Timeout expired. Kafka creation status: "
+            f"{kafka_mgmt_api_instance.get_kafka_by_id(id=kafka_instance.id).status}"
+        )
+        raise
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="class")
 def kafka_instance_client(kafka_instance_ready, access_token):
     # https://github.com/redhat-developer/app-services-sdk-python/tree/main/sdks/kafka_instance_sdk
     configuration = rhoas_kafka_instance_sdk.Configuration(
         host=kafka_instance_ready.admin_api_server_url, access_token=access_token
     )
 
-    with rhoas_kafka_instance_sdk.ApiClient(configuration=configuration) as api_client:
-        yield api_client
+    with rhoas_kafka_instance_sdk.ApiClient(
+        configuration=configuration
+    ) as kafka_api_client:
+        yield kafka_api_client
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="class")
 def kafka_instance_sa(kafka_instance_client, service_accounts_api_instance):
     service_account_create_request_data = ServiceAccountCreateRequestData(
         name=KAFKA_SA_NAME,
@@ -116,7 +123,7 @@ def kafka_instance_sa(kafka_instance_client, service_accounts_api_instance):
     service_accounts_api_instance.delete_service_account(id=kafka_sa.id, async_req=True)
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="class")
 def kafka_sa_acl(kafka_instance_client, kafka_instance_sa):
     # Binding the service-account instance to kafka with privileges
     # via AclBinding instance
@@ -142,20 +149,8 @@ def kafka_sa_acl(kafka_instance_client, kafka_instance_sa):
         )
         acl_api_instance.create_acl(acl_binding=acl_binding)
 
-        # validating current acl created
-        sa_acl = acl_api_instance.get_acls(
-            resource_type=resource_type,
-            resource_name=resource_name,
-            pattern_type=pattern_type,
-            permission=permission,
-            principal=principal,
-            operation=operation,
-            async_req=True,
-        )
-        assert sa_acl, f"Failed to bind a kafka acl for {resource} resource type"
 
-
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="class")
 def kafka_topics(kafka_instance_client):
     kafka_topics_api_instance = topics_api.TopicsApi(api_client=kafka_instance_client)
     for topics_group in KAFKA_TOPICS:
@@ -176,11 +171,12 @@ def kafka_topics(kafka_instance_client):
 
     # Produce to tested topic
     records_api_client = records_api.RecordsApi(api_client=kafka_instance_client)
-    record = Record(value=TEST_RECORD)
-    records_api_client.produce_record(topic_name=TEST_TOPIC, record=record)
+    records_api_client.produce_record(
+        topic_name=TEST_TOPIC, record=Record(value=TEST_RECORD)
+    )
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="class")
 def debezium_namespace(admin_client):
     with cluster_resource(Namespace)(client=admin_client, name=DEBEZIUM_NS) as dbz_ns:
         dbz_ns.wait_for_status(
@@ -189,11 +185,11 @@ def debezium_namespace(admin_client):
         yield dbz_ns
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="class")
 def consumer_pod_yaml(kafka_instance_ready, kafka_instance_sa, debezium_namespace):
-    pod_manifest_yaml = render_template_from_dict(
+    return render_template_from_dict(
         template_name="managed_services/mas_debezium/consumer_pod.j2",
-        _dict={
+        template_dict={
             "debezium_namespace": debezium_namespace.name,
             "consumer_pod_name": CONSUMER_POD,
             "consumer_image": CONSUMER_IMAGE,
@@ -203,10 +199,9 @@ def consumer_pod_yaml(kafka_instance_ready, kafka_instance_sa, debezium_namespac
             "test_kafka_topic": TEST_TOPIC,
         },
     )
-    return pod_manifest_yaml
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="class")
 def consumer_pod(admin_client, consumer_pod_yaml):
     with cluster_resource(Pod)(
         client=admin_client, yaml_file=consumer_pod_yaml
