@@ -495,6 +495,20 @@ urllib3 = "*"
 xmltodict = "*"
 
 [[package]]
+name = "openshift-python-wrapper-data-collector"
+version = "1.0.4"
+description = "Data collector for https://github.com/openshift/openshift-python-wrapper when running with PyTest"
+category = "main"
+optional = false
+python-versions = ">=3.8"
+
+[package.dependencies]
+openshift-python-wrapper = "*"
+pytest = "*"
+pytest-testconfig = "*"
+PyYAML = "*"
+
+[[package]]
 name = "packaging"
 version = "23.0"
 description = "Core utilities for Python packages"
@@ -945,7 +959,7 @@ python-versions = ">=3.4"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "e98afed32d566c90788eb79b5b32eb2e51bc3418ec321d0bc4ae5a3ca422f0da"
+content-hash = "020332406615f6e0b73410cd7494538957259701221913951a23198a57ebb675"
 
 [metadata.files]
 appnope = [
@@ -1316,6 +1330,9 @@ openshift-python-utilities = [
 ]
 openshift-python-wrapper = [
     {file = "openshift-python-wrapper-4.12.23.tar.gz", hash = "sha256:3ae067c26c060950b4fb2b8c5ecba548014e4e6b0527ed6c551f49f3cc9845e7"},
+]
+openshift-python-wrapper-data-collector = [
+    {file = "openshift-python-wrapper-data-collector-1.0.4.tar.gz", hash = "sha256:fa4b54c8195a592527ed580af3a4bc88014a8d54b0365e0076ac2e1553110406"},
 ]
 packaging = [
     {file = "packaging-23.0-py3-none-any.whl", hash = "sha256:714ac14496c3e68c99c29b00845f7a2b85f3bb6f1078fd9f72fd20f0570002b2"},

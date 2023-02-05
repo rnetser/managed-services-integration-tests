@@ -6,12 +6,12 @@ import pytest
 import yaml
 from ocp_resources.node import Node
 from ocp_resources.pod import Pod
-from ocp_utilities.data_collector import (
+from ocp_utilities.infra import get_client
+from ocp_wrapper_data_collector.data_collector import (
     collect_pods_data,
     collect_resources_yaml_instance,
     prepare_pytest_item_data_dir,
 )
-from ocp_utilities.infra import get_client
 from pytest_testconfig import config as py_config
 
 from utilities.logger import separator, setup_logging

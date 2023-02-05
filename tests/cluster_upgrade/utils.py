@@ -5,7 +5,7 @@ from dateutil.tz import tzutc
 from ocp_resources.cluster_operator import ClusterOperator
 from ocp_resources.cluster_version import ClusterVersion
 from ocp_resources.utils import TimeoutExpiredError, TimeoutSampler
-from ocp_utilities.data_collector import collect_resources_yaml_instance
+from ocp_wrapper_data_collector.data_collector import collect_resources_yaml_instance
 from pytest_testconfig import py_config
 
 
