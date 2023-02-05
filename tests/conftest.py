@@ -3,7 +3,7 @@ import os
 import pytest
 from ocm_python_wrapper.cluster import Cluster
 from ocp_resources.node import Node
-from ocp_resources.resource import get_client
+from ocp_utilities.infra import get_client
 
 from utilities.infra import get_ocm_client
 
