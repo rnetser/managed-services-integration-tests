@@ -14,6 +14,7 @@ docker = "*"
 colorlog = "*"
 openshift-python-utilities = "*"
 openshift-cluster-management-python-wrapper = "==1.0.*"
+openshift-python-wrapper-data-collector = "*"
 pytest = "*"
 pytest-testconfig = "*"
 pytest-progress = "==1.2.2"  # https://github.com/ssrikanta/pytest-progress
