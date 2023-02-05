@@ -7,7 +7,7 @@ import yaml
 from ocp_resources.node import Node
 from ocp_resources.pod import Pod
 from ocp_utilities.infra import get_client
-from ocpwrapper_data_collector.data_collector import (
+from ocp_wrapper_data_collector.data_collector import (
     collect_pods_data,
     collect_resources_yaml_instance,
     prepare_pytest_item_data_dir,
