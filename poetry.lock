@@ -465,7 +465,7 @@ requests = "*"
 
 [[package]]
 name = "openshift-python-utilities"
-version = "4.12.11"
+version = "4.13.1"
 description = "Wrapper around https://github.com/openshift/openshift-python-utilities"
 category = "main"
 optional = false
@@ -474,7 +474,7 @@ python-versions = ">=3.8"
 [package.dependencies]
 colorlog = "*"
 openshift = "*"
-openshift-python-wrapper = ">=4.12.0,<4.13.0"
+openshift-python-wrapper = "*"
 pytest = "*"
 pytest-testconfig = "*"
 PyYAML = "*"
@@ -1312,7 +1312,7 @@ openshift-cluster-management-python-wrapper = [
     {file = "openshift-cluster-management-python-wrapper-1.0.1.tar.gz", hash = "sha256:aba9213931735c1ab079de86c37716fe6e7729da0e1605287cc04097aba9993b"},
 ]
 openshift-python-utilities = [
-    {file = "openshift-python-utilities-4.12.11.tar.gz", hash = "sha256:1848e026776deb3edcbebd0d95f895bd761cf5f4fc83d4a21d41aba73fd8fb1b"},
+    {file = "openshift-python-utilities-4.13.1.tar.gz", hash = "sha256:5d019790369bc5e19b9f13d8439a80ae07f5458a29f7e9189d0990d83c66c0d7"},
 ]
 openshift-python-wrapper = [
     {file = "openshift-python-wrapper-4.12.23.tar.gz", hash = "sha256:3ae067c26c060950b4fb2b8c5ecba548014e4e6b0527ed6c551f49f3cc9845e7"},
