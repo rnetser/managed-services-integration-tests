@@ -32,14 +32,13 @@ def cluster_sanity(
         pods (list): list of Pod resources
 
     Raises:
-        NodeNotReadyError, NodeUnschedulableError, PodsFailedOrPendingError, or
-        NodesNotHealthyConditionError if node check failed
+        NodeNotReadyError or NodeUnschedulableError or PodsFailedOrPendingError or
+        NodesNotHealthyConditionError: if node check failed
     """
 
     exceptions_filename = "cluster_sanity_failure.txt"
     try:
         LOGGER.info("Running cluster sanity")
-        # validate that all the nodes are ready and schedulable
         LOGGER.info("Check nodes sanity.")
         assert_nodes_ready(nodes=nodes)
         assert_nodes_schedulable(nodes=nodes)
