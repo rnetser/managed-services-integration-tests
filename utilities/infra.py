@@ -9,7 +9,6 @@ from ocp_utilities.exceptions import (
 )
 from ocp_utilities.infra import (
     assert_nodes_in_healthy_condition,
-    assert_nodes_ready,
     assert_nodes_schedulable,
     assert_pods_failed_or_pending,
 )
@@ -40,7 +39,6 @@ def cluster_sanity(
     try:
         LOGGER.info("Running cluster sanity")
         LOGGER.info("Check nodes sanity.")
-        assert_nodes_ready(nodes=nodes)
         assert_nodes_schedulable(nodes=nodes)
         assert_nodes_in_healthy_condition(nodes=nodes)
         assert_pods_failed_or_pending(pods=pods)
