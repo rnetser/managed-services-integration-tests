@@ -61,7 +61,7 @@ def get_ocm_client(token):
     api_host = py_config["api_server"]
     LOGGER.info(f"Running against {api_host}")
     ocm_client = OCMPythonClient(
-        token=token,
+        token=token.strip(),
         endpoint="https://sso.redhat.com/auth/realms/redhat-external/protocol/openid-connect/token",
         api_host=api_host,
         discard_unknown_keys=True,
