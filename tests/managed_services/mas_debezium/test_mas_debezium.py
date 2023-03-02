@@ -14,7 +14,7 @@ class TestDebezium:
         usage and teardown via rhoas sdk
         """
         # Get consumed record from test topic via kcat pod
-        kafka_event = consumer_pod.log()
-        assert kafka_event.startswith(
+        kafka_log = consumer_pod.log()
+        assert kafka_log.startswith(
             TEST_RECORD
-        ), f"Failed to consume the correct record. Existing Kafka event:\n{kafka_event}"
+        ), f"Failed to consume the correct record. Existing Kafka event:\n{kafka_log}"
