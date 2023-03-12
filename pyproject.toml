@@ -13,7 +13,6 @@ openshift-python-wrapper = "*"
 docker = "*"
 colorlog = "*"
 openshift-python-utilities = "*"
-openshift-cluster-management-python-wrapper = "==1.0.*"
 openshift-python-wrapper-data-collector = "*"
 pytest = "*"
 pytest-testconfig = "*"
@@ -24,6 +23,7 @@ pip = "*"
 PyYaml = "*"
 rhoas-sdks = "*"
 auth = "*"
+openshift-cluster-management-python-wrapper = {path = "/home/rnetser/git/openshift-cluster-management-python-wrapper"}
 
 [tool.poetry.dev-dependencies]
 ipdb = "*"
