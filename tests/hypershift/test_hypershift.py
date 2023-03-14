@@ -1,4 +1,3 @@
-import json
 import logging
 import os
 import re
@@ -108,17 +107,9 @@ def rosa_login():
 
 
 @pytest.fixture(scope="session")
-def rosa_hypershift_regions():
-    # A region (any region) is required for ROSA commands
-    cmd_succeeded, cmd_out, cmd_err = run_command(
-        command=shlex.split("rosa list regions -ojson --region us-west-2")
-    )
-    if not cmd_succeeded:
-        LOGGER.error(f"Failed to get ROSA regions, error: {cmd_err}")
-        raise RosaCommandError
-    output = json.loads(cmd_out)
+def rosa_hypershift_regions(rosa_regions):
     hypershift_regions = [
-        region["id"] for region in output if region["supports_hypershift"] is True
+        region["id"] for region in rosa_regions if region["supports_hypershift"] is True
     ]
     if not hypershift_regions:
         LOGGER.error("No Hypershift-supported regions found")

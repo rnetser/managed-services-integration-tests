@@ -1,4 +1,7 @@
 # managed kafka variables
-KAFKA_NAME = "ms-kafka"
-TEST_RECORD = "This is a topic test record"
-TEST_TOPIC = "avro.inventory.customers"
+CLOUD_PROVIDER = "aws"
+KAFKA_TOPICS_LIST = [
+    "debezium-cluster-configs",
+    "debezium-cluster-offsets",
+    "debezium-cluster-status",
+]

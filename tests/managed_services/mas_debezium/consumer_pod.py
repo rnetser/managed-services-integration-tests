@@ -1,3 +1,5 @@
+import shlex
+
 from ocp_resources.constants import TIMEOUT_4MINUTES
 from ocp_resources.pod import Pod
 
@@ -45,23 +47,7 @@ class ConsumerPod(Pod):
                         {
                             "name": self.name,
                             "image": self.consumer_image,
-                            "command": [
-                                "kcat",
-                                "-b",
-                                self.kafka_bootstrap_url,
-                                "-X",
-                                "sasl.mechanisms=PLAIN",
-                                "-X",
-                                "security.protocol=SASL_SSL",
-                                "-X",
-                                f"sasl.username={self.kafka_sa_client_id}",
-                                "-X",
-                                f"sasl.password={self.kafka_sa_client_secret}",
-                                "-t",
-                                self.kafka_test_topic,
-                                "-C",
-                                "-e",
-                            ],
+                            "command": shlex.split(s="sleep 1d"),
                         }
                     ],
                 }

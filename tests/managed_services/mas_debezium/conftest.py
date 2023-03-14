@@ -2,7 +2,7 @@ import logging
 
 import pytest
 import rhoas_kafka_instance_sdk
-from constants import KAFKA_NAME, TEST_RECORD, TEST_TOPIC
+from constants import CLOUD_PROVIDER, KAFKA_TOPICS_LIST
 from consumer_pod import ConsumerPod
 from ocp_resources.namespace import Namespace
 from ocp_resources.pod import Pod
@@ -18,6 +18,7 @@ from rhoas_kafka_instance_sdk.model.config_entry import ConfigEntry
 from rhoas_kafka_instance_sdk.model.new_topic_input import NewTopicInput
 from rhoas_kafka_instance_sdk.model.record import Record
 from rhoas_kafka_instance_sdk.model.topic_settings import TopicSettings
+from rhoas_kafka_mgmt_sdk.exceptions import ApiException
 from rhoas_kafka_mgmt_sdk.model.kafka_request_payload import KafkaRequestPayload
 from rhoas_service_accounts_mgmt_sdk.model.service_account_create_request_data import (
     ServiceAccountCreateRequestData,
@@ -28,13 +29,36 @@ LOGGER = logging.getLogger(__name__)
 WAIT_STATUS_TIMEOUT = 120
 
 
+class NoAvailableRegionsError(Exception):
+    pass
+
+
 @pytest.fixture(scope="class")
-def kafka_instance(kafka_mgmt_api_instance):
+def kafka_instance_region(kafka_mgmt_api_instance, rosa_regions):
+    LOGGER.info(
+        f"Searching for available kafka cloud region under {CLOUD_PROVIDER} cloud provider"
+    )
+    for region_dict in rosa_regions:
+        try:
+            kafka_mgmt_api_instance.get_instance_types_by_cloud_provider_and_region(
+                cloud_provider=CLOUD_PROVIDER, cloud_region=region_dict["id"]
+            )
+            return region_dict["id"]
+        except ApiException:
+            continue
+
+    raise NoAvailableRegionsError
+
+
+@pytest.fixture(scope="class")
+def kafka_instance(kafka_mgmt_api_instance, kafka_instance_region):
+    kafka_name = "msi-kafka"
+    LOGGER.info(f"Creating {kafka_name} kafka instance")
     _async = True
     kafka_request_payload = KafkaRequestPayload(
-        cloud_provider="aws",
-        name=KAFKA_NAME,
-        region="us-east-1",
+        cloud_provider=CLOUD_PROVIDER,
+        name=kafka_name,
+        region=kafka_instance_region,
         plan="standard.x1",
         reauthentication_enabled=True,
     )
@@ -47,30 +71,45 @@ def kafka_instance(kafka_mgmt_api_instance):
 
     yield kafka_create_api
 
+    LOGGER.info(f"Waiting for {kafka_name} kafka instance to be deleted")
     kafka_mgmt_api_instance.delete_kafka_by_id(
         async_req=True, _async=_async, id=kafka_create_api.id
     )
+    kafka_list_samples = TimeoutSampler(
+        wait_timeout=WAIT_STATUS_TIMEOUT,
+        sleep=10,
+        func=kafka_mgmt_api_instance.get_kafkas,
+        search=f"name = {kafka_name}",
+    )
+    kafka_list_sample = None
+    try:
+        for kafka_list_sample in kafka_list_samples:
+            if kafka_list_sample.size == 0:
+                return
+    except TimeoutExpiredError:
+        LOGGER.error(
+            f"Timeout expired for deleting {kafka_name} kafka instance:\n"
+            f"{kafka_list_sample}"
+        )
+        raise
 
 
 @pytest.fixture(scope="class")
 def kafka_instance_ready(kafka_mgmt_api_instance, kafka_instance):
+    LOGGER.info(f"Waiting for {kafka_instance.name} kafka instance to be ready")
+    kafka_samples = TimeoutSampler(
+        wait_timeout=450,
+        sleep=10,
+        func=kafka_mgmt_api_instance.get_kafka_by_id,
+        id=kafka_instance.id,
+    )
+    kafka_sample = None
     try:
-        kafka_samples = TimeoutSampler(
-            wait_timeout=360,
-            sleep=10,
-            func=lambda: kafka_mgmt_api_instance.get_kafka_by_id(id=kafka_instance.id),
-        )
         for kafka_sample in kafka_samples:
             if kafka_sample.status == "ready":
-                LOGGER.info(f"Kafka instance is ready:\n{kafka_sample}")
-                yield kafka_sample
-                break
-
+                return kafka_sample
     except TimeoutExpiredError:
-        LOGGER.error(
-            "Timeout expired. Kafka creation status: "
-            f"{kafka_mgmt_api_instance.get_kafka_by_id(id=kafka_instance.id).status}"
-        )
+        LOGGER.error("Timeout expired. Current kafka snapshot:\n" f"{kafka_sample}")
         raise
 
 
@@ -88,10 +127,16 @@ def kafka_instance_client(kafka_instance_ready, access_token):
 
 
 @pytest.fixture(scope="class")
-def kafka_instance_sa(kafka_instance_client, service_accounts_api_instance):
+def kafka_instance_sa(
+    kafka_instance_client, kafka_instance, service_accounts_api_instance
+):
+    kafka_sa_name = f"{kafka_instance.name}-sa"
+    LOGGER.info(
+        f"Creating {kafka_sa_name} service-account for {kafka_instance.name} kafka instance"
+    )
     service_account_create_request_data = ServiceAccountCreateRequestData(
-        name="ms-kafka-sa",
-        description=f"{KAFKA_NAME} instance service-account",
+        name=kafka_sa_name,
+        description=f"{kafka_instance.name} instance service-account",
     )
     kafka_sa = service_accounts_api_instance.create_service_account(
         service_account_create_request_data=service_account_create_request_data
@@ -102,11 +147,33 @@ def kafka_instance_sa(kafka_instance_client, service_accounts_api_instance):
 
     yield kafka_sa
 
+    LOGGER.info(f"Waiting for {kafka_sa_name} service-account to be deleted")
     service_accounts_api_instance.delete_service_account(id=kafka_sa.id, async_req=True)
+    sa_list_samples = TimeoutSampler(
+        wait_timeout=WAIT_STATUS_TIMEOUT,
+        sleep=10,
+        func=service_accounts_api_instance.get_service_accounts,
+        client_id=[kafka_sa.id],
+    )
+    # if a service-account with given id does not exist, an empty list will be returned
+    sa_list_sample = "N/A"
+    try:
+        for sa_list_sample in sa_list_samples:
+            if not sa_list_sample:
+                return
+    except TimeoutExpiredError:
+        LOGGER.error(
+            f"Timeout expired for deleting {kafka_sa_name} kafka service account:\n"
+            f"{sa_list_sample}"
+        )
+        raise
 
 
 @pytest.fixture(scope="class")
-def kafka_sa_acl(kafka_instance_client, kafka_instance_sa):
+def kafka_sa_acl_binding(kafka_instance_client, kafka_instance, kafka_instance_sa):
+    LOGGER.info(
+        f"Binding acls for {kafka_instance_sa.name} service-account with {kafka_instance.name} kafka instance"
+    )
     # Binding the service-account instance to kafka with privileges
     # via AclBinding instance
     acl_api_instance = acls_api.AclsApi(api_client=kafka_instance_client)
@@ -123,57 +190,47 @@ def kafka_sa_acl(kafka_instance_client, kafka_instance_sa):
 
 
 @pytest.fixture(scope="class")
-def kafka_topics(kafka_instance_client):
-    kafka_topics = [
-        {
-            "name": "debezium_topics",
-            "topics": [
-                "avro",
-                "avro.inventory.addresses",
-                "avro.inventory.customers",
-                "avro.inventory.geom",
-                "avro.inventory.orders",
-                "avro.inventory.products",
-                "avro.inventory.products_on_hand",
-                "schema-changes.inventory",
-            ],
-            "cleanup_policy": "delete",
-            "num_partitions": 1,
-        },
-        {
-            "name": "mysql_topics",
-            "topics": [
-                "debezium-cluster-configs",
-                "debezium-cluster-offsets",
-                "debezium-cluster-status",
-            ],
-            "cleanup_policy": "compact",
-            "num_partitions": 1,
-        },
-    ]
+def kafka_topics(kafka_instance_client, kafka_instance):
+    LOGGER.info(f"Creating kafka topics for {kafka_instance.name} kafka instance")
 
+    created_topics = []
     kafka_topics_api_instance = topics_api.TopicsApi(api_client=kafka_instance_client)
-    for topics_group in kafka_topics:
-        for topic in topics_group["topics"]:
-            new_topic_input = NewTopicInput(
-                name=topic,
-                settings=TopicSettings(
-                    num_partitions=topics_group["num_partitions"],
-                    config=[
-                        ConfigEntry(
-                            key="cleanup.policy",
-                            value=topics_group["cleanup_policy"],
-                        ),
-                    ],
-                ),
-            )
+    for topic_name in KAFKA_TOPICS_LIST:
+        new_topic_input = NewTopicInput(
+            name=topic_name,
+            settings=TopicSettings(
+                num_partitions=1,
+                config=[
+                    ConfigEntry(
+                        key="cleanup.policy",
+                        value="delete",
+                    ),
+                ],
+            ),
+        )
+        created_topics.append(
             kafka_topics_api_instance.create_topic(new_topic_input=new_topic_input)
+        )
 
-    # Produce to tested topic
+    return created_topics
+
+
+@pytest.fixture(scope="class")
+def first_kafka_topic_name(kafka_topics):
+    return kafka_topics[0].name
+
+
+@pytest.fixture(scope="class")
+def kafka_record(kafka_instance_client, first_kafka_topic_name):
+    test_record = "This is a topic test record"
+    LOGGER.info(
+        f"Producing test record '{test_record}' to {first_kafka_topic_name} kafka topic"
+    )
     records_api_client = records_api.RecordsApi(api_client=kafka_instance_client)
     records_api_client.produce_record(
-        topic_name=TEST_TOPIC, record=Record(value=TEST_RECORD)
+        topic_name=first_kafka_topic_name, record=Record(value=test_record)
     )
+    return test_record
 
 
 @pytest.fixture(scope="class")
@@ -189,7 +246,11 @@ def debezium_namespace(admin_client):
 
 @pytest.fixture(scope="class")
 def consumer_pod(
-    admin_client, kafka_instance_ready, kafka_instance_sa, debezium_namespace
+    admin_client,
+    kafka_instance_ready,
+    kafka_instance_sa,
+    debezium_namespace,
+    first_kafka_topic_name,
 ):
     with cluster_resource(ConsumerPod)(
         client=admin_client,
@@ -199,7 +260,9 @@ def consumer_pod(
         kafka_bootstrap_url=kafka_instance_ready.bootstrap_server_host,
         kafka_sa_client_id=kafka_instance_sa.id,
         kafka_sa_client_secret=kafka_instance_sa.secret,
-        kafka_test_topic=TEST_TOPIC,
-    ) as consumer:
-        consumer.wait_for_status(status=Pod.Status.RUNNING, timeout=WAIT_STATUS_TIMEOUT)
-        yield consumer
+        kafka_test_topic=first_kafka_topic_name,
+    ) as consumer_pod:
+        consumer_pod.wait_for_status(
+            status=Pod.Status.RUNNING, timeout=WAIT_STATUS_TIMEOUT
+        )
+        yield consumer_pod
