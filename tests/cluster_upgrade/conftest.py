@@ -7,14 +7,6 @@ from tests.cluster_upgrade.utils import cluster_upgrade_policy_dict
 
 
 @pytest.fixture(scope="session")
-def ocp_target_version(request):
-    cmdline_option = "--ocp-target-version"
-    ocp_target_version = request.config.getoption(cmdline_option)
-    assert ocp_target_version, f"{cmdline_option} cmdline option not provided"
-    return ocp_target_version
-
-
-@pytest.fixture(scope="session")
 def target_version_in_available_upgrades(cluster, ocp_target_version):
     available_upgrades = cluster.instance.version.available_upgrades
     assert (

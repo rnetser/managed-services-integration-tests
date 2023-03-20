@@ -126,3 +126,9 @@ docs/source/rst
 
 # For local run (debug).
 resources
+
+# Terraform files
+.terraform.lock.hcl
+.terraform.tfstate.lock.info
+terraform.tfstate
+terraform.tfstate.backup
