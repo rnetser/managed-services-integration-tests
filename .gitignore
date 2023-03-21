@@ -124,11 +124,7 @@ docs/source/rst
 # IntelliJ project folder
 .idea/
 
-# For local run (debug).
-resources
-
 # Terraform files
-.terraform.lock.hcl
-.terraform.tfstate.lock.info
-terraform.tfstate
-terraform.tfstate.backup
+.terraform.*
+terraform.*
+tests/hypershift/.terraform/
