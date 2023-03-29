@@ -260,17 +260,19 @@ class TestHypershiftCluster:
     @pytest.mark.dependency(
         name="test_install_operator", depends=["test_hypershift_cluster_ready"]
     )
-    def test_install_operator(self, admin_client):
+    def test_install_operator(self, cluster_scope_class):
         install_operator(
-            admin_client=admin_client,
+            admin_client=cluster_scope_class.ocp_client,
             name=OPERATOR_NAME,
             channel="stable",
             source="redhat-operators",
         )
 
     @pytest.mark.dependency(depends=["test_install_operator"])
-    def test_uninstall_operator(self, admin_client):
-        uninstall_operator(admin_client=admin_client, name=OPERATOR_NAME)
+    def test_uninstall_operator(self, cluster_scope_class):
+        uninstall_operator(
+            admin_client=cluster_scope_class.ocp_client, name=OPERATOR_NAME
+        )
 
     @pytest.mark.dependency(depends=["test_hypershift_cluster_installation"])
     def test_hypershift_cluster_uninstall(self, cluster_scope_class):
