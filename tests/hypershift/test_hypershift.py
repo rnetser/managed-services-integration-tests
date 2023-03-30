@@ -12,12 +12,14 @@ from clouds.aws.aws_utils import verify_aws_credentials
 from ocm_python_wrapper.cluster import Cluster
 from ocm_python_wrapper.exceptions import ClusterInstallError, MissingResourceError
 from ocp_resources.utils import TimeoutExpiredError, TimeoutSampler
+from ocp_utilities.operators import install_operator, uninstall_operator
 from ocp_utilities.utils import run_command
 from pytest_testconfig import py_config
 from python_terraform import IsNotFlagged, Terraform, TerraformCommandError
 
 
 LOGGER = logging.getLogger(__name__)
+OPERATOR_NAME = "servicemeshoperator"
 
 
 pytestmark = pytest.mark.hypershift_install
@@ -248,9 +250,29 @@ class TestHypershiftCluster:
             aws_compute_machine_type=py_config["aws_compute_machine_type"],
         )
 
-    @pytest.mark.dependency(depends=["test_hypershift_cluster_installation"])
+    @pytest.mark.dependency(
+        name="test_hypershift_cluster_ready",
+        depends=["test_hypershift_cluster_installation"],
+    )
     def test_hypershift_cluster_ready(self, cluster_scope_class):
         cluster_scope_class.wait_for_cluster_ready()
+
+    @pytest.mark.dependency(
+        name="test_install_operator", depends=["test_hypershift_cluster_ready"]
+    )
+    def test_install_operator(self, cluster_scope_class):
+        install_operator(
+            admin_client=cluster_scope_class.ocp_client,
+            name=OPERATOR_NAME,
+            channel="stable",
+            source="redhat-operators",
+        )
+
+    @pytest.mark.dependency(depends=["test_install_operator"])
+    def test_uninstall_operator(self, cluster_scope_class):
+        uninstall_operator(
+            admin_client=cluster_scope_class.ocp_client, name=OPERATOR_NAME
+        )
 
     @pytest.mark.dependency(depends=["test_hypershift_cluster_installation"])
     def test_hypershift_cluster_uninstall(self, cluster_scope_class):
