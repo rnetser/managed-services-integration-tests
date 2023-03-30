@@ -49,7 +49,6 @@ def cluster_sanity(
         PodsFailedOrPendingError,
         NodesNotHealthyConditionError,
     ) as ex:
-
         exit_pytest_execution(
             filename=exceptions_filename,
             message=ex.args[0],
