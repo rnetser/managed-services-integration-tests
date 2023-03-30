@@ -24,6 +24,12 @@ pip = "*"
 PyYaml = "*"
 rhoas-sdks = "*"
 auth = "*"
+python-terraform = "*"
+pytest-dependency = "*"
+pytest-order = "*"
+shortuuid = "*"
+redhat-qe-cloud-tools = "*"
+boto3 = "*"
 
 [tool.poetry.dev-dependencies]
 ipdb = "*"

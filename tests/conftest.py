@@ -44,3 +44,11 @@ def ocm_token():
     token = os.getenv(ocm_token_env_var_name)
     assert token, f"{ocm_token_env_var_name} environment variable is not set."
     return token
+
+
+@pytest.fixture(scope="session")
+def ocp_target_version(request):
+    cmdline_option = "--ocp-target-version"
+    ocp_target_version = request.config.getoption(cmdline_option)
+    assert ocp_target_version, f"{cmdline_option} cmdline option not provided"
+    return ocp_target_version
