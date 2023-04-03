@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import shlex
 
@@ -8,8 +9,14 @@ from ocp_resources.node import Node
 from ocp_utilities.infra import get_client
 from ocp_utilities.utils import run_command
 
-from tests.hypershift.test_hypershift import LOGGER, RosaCommandError
 from utilities.infra import get_ocm_client
+
+
+LOGGER = logging.getLogger(__name__)
+
+
+class RosaCommandError(Exception):
+    pass
 
 
 @pytest.fixture(scope="session")
@@ -64,7 +71,7 @@ def rosa_regions():
     cmd_succeeded, cmd_out, cmd_err = run_command(
         command=shlex.split("rosa list regions -ojson --region us-west-2")
     )
-    if not cmd_succeeded:
-        LOGGER.error(f"Failed to get ROSA regions, error: {cmd_err}")
-        raise RosaCommandError
-    return json.loads(cmd_out)
+    if cmd_succeeded:
+        return json.loads(cmd_out)
+    LOGGER.error(f"Failed to get ROSA regions, error: {cmd_err}")
+    raise RosaCommandError

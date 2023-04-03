@@ -14,10 +14,6 @@ class ConsumerPod(Pod):
         privileged_client=None,
         yaml_file=None,
         consumer_image=None,
-        kafka_bootstrap_url=None,
-        kafka_sa_client_id=None,
-        kafka_sa_client_secret=None,
-        kafka_test_topic=None,
         delete_timeout=TIMEOUT_4MINUTES,
         **kwargs,
     ):
@@ -32,10 +28,6 @@ class ConsumerPod(Pod):
             **kwargs,
         )
         self.consumer_image = consumer_image
-        self.kafka_bootstrap_url = kafka_bootstrap_url
-        self.kafka_sa_client_id = kafka_sa_client_id
-        self.kafka_sa_client_secret = kafka_sa_client_secret
-        self.kafka_test_topic = kafka_test_topic
 
     def to_dict(self):
         super().to_dict()

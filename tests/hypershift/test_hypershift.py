@@ -28,10 +28,6 @@ class RosaLoginError(Exception):
     pass
 
 
-class RosaCommandError(Exception):
-    pass
-
-
 class RegionNotFoundError(Exception):
     pass
 

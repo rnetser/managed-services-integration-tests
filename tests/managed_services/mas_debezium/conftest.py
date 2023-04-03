@@ -1,13 +1,15 @@
+import contextlib
 import logging
 
 import pytest
 import rhoas_kafka_instance_sdk
-from constants import CLOUD_PROVIDER, KAFKA_TOPICS_LIST
+from constants import KAFKA_TOPICS_LIST
 from consumer_pod import ConsumerPod
 from ocp_resources.namespace import Namespace
 from ocp_resources.pod import Pod
 from ocp_resources.utils import TimeoutExpiredError, TimeoutSampler
 from ocp_utilities.infra import cluster_resource
+from pytest_testconfig import py_config
 from rhoas_kafka_instance_sdk.api import acls_api, records_api, topics_api
 from rhoas_kafka_instance_sdk.model.acl_binding import AclBinding
 from rhoas_kafka_instance_sdk.model.acl_operation import AclOperation
@@ -29,57 +31,59 @@ LOGGER = logging.getLogger(__name__)
 WAIT_STATUS_TIMEOUT = 120
 
 
-class NoAvailableRegionsError(Exception):
+class NoAvailableKafkaRegionsError(Exception):
     pass
 
 
 @pytest.fixture(scope="class")
-def kafka_instance_region(kafka_mgmt_api_instance, rosa_regions):
+def kafka_supported_region(kafka_mgmt_api_instance, rosa_regions):
+    cloud_provider = py_config["cloud_provider"]
     LOGGER.info(
-        f"Searching for available kafka cloud region under {CLOUD_PROVIDER} cloud provider"
+        f"Searching for an available kafka cloud region under {cloud_provider} cloud provider"
     )
     for region_dict in rosa_regions:
-        try:
+        region_id = region_dict["id"]
+        with contextlib.suppress(ApiException):
             kafka_mgmt_api_instance.get_instance_types_by_cloud_provider_and_region(
-                cloud_provider=CLOUD_PROVIDER, cloud_region=region_dict["id"]
+                cloud_provider=cloud_provider, cloud_region=region_id
             )
-            return region_dict["id"]
-        except ApiException:
-            continue
+            return region_id
 
-    raise NoAvailableRegionsError
+    raise NoAvailableKafkaRegionsError(
+        "No available aws cloud region to provision a kafka instance was found."
+    )
 
 
 @pytest.fixture(scope="class")
-def kafka_instance(kafka_mgmt_api_instance, kafka_instance_region):
+def kafka_instance(kafka_mgmt_api_instance, kafka_supported_region):
     kafka_name = "msi-kafka"
     LOGGER.info(f"Creating {kafka_name} kafka instance")
     _async = True
     kafka_request_payload = KafkaRequestPayload(
-        cloud_provider=CLOUD_PROVIDER,
+        cloud_provider=py_config["cloud_provider"],
         name=kafka_name,
-        region=kafka_instance_region,
+        region=kafka_supported_region,
         plan="standard.x1",
         reauthentication_enabled=True,
     )
-    kafka_create_api = kafka_mgmt_api_instance.create_kafka(
+    requested_kafka_dict = kafka_mgmt_api_instance.create_kafka(
         _async=_async, kafka_request_payload=kafka_request_payload
     )
     assert (
-        kafka_create_api.status == "accepted"
-    ), f"Failed to create a kafka instance. API response:\n{kafka_create_api}"
+        requested_kafka_dict.status == "accepted"
+    ), f"Failed to create a kafka instance. API response:\n{requested_kafka_dict}"
 
-    yield kafka_create_api
+    yield requested_kafka_dict
 
-    LOGGER.info(f"Waiting for {kafka_name} kafka instance to be deleted")
+    LOGGER.info(f"Waiting for {requested_kafka_dict.name} kafka instance to be deleted")
     kafka_mgmt_api_instance.delete_kafka_by_id(
-        async_req=True, _async=_async, id=kafka_create_api.id
+        async_req=True, _async=_async, id=requested_kafka_dict.id
     )
     kafka_list_samples = TimeoutSampler(
         wait_timeout=WAIT_STATUS_TIMEOUT,
         sleep=10,
         func=kafka_mgmt_api_instance.get_kafkas,
-        search=f"name = {kafka_name}",
+        search=f"name = {requested_kafka_dict.name}",
     )
     kafka_list_sample = None
     try:
@@ -147,7 +151,7 @@ def kafka_instance_sa(
 
     yield kafka_sa
 
-    LOGGER.info(f"Waiting for {kafka_sa_name} service-account to be deleted")
+    LOGGER.info(f"Waiting for {kafka_sa.name} service-account to be deleted")
     service_accounts_api_instance.delete_service_account(id=kafka_sa.id, async_req=True)
     sa_list_samples = TimeoutSampler(
         wait_timeout=WAIT_STATUS_TIMEOUT,
@@ -163,7 +167,7 @@ def kafka_instance_sa(
                 return
     except TimeoutExpiredError:
         LOGGER.error(
-            f"Timeout expired for deleting {kafka_sa_name} kafka service account:\n"
+            f"Timeout expired for deleting {kafka_sa.name} kafka service account:\n"
             f"{sa_list_sample}"
         )
         raise
@@ -247,20 +251,13 @@ def debezium_namespace(admin_client):
 @pytest.fixture(scope="class")
 def consumer_pod(
     admin_client,
-    kafka_instance_ready,
-    kafka_instance_sa,
     debezium_namespace,
-    first_kafka_topic_name,
 ):
     with cluster_resource(ConsumerPod)(
         client=admin_client,
         name="kafka-consumer-pod",
         namespace=debezium_namespace.name,
         consumer_image="edenhill/kcat:1.7.1",
-        kafka_bootstrap_url=kafka_instance_ready.bootstrap_server_host,
-        kafka_sa_client_id=kafka_instance_sa.id,
-        kafka_sa_client_secret=kafka_instance_sa.secret,
-        kafka_test_topic=first_kafka_topic_name,
     ) as consumer_pod:
         consumer_pod.wait_for_status(
             status=Pod.Status.RUNNING, timeout=WAIT_STATUS_TIMEOUT
