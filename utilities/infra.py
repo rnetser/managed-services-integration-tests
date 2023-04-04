@@ -1,4 +1,3 @@
-import contextlib
 import logging
 
 from ocm_python_wrapper.ocm_client import OCMPythonClient
@@ -14,7 +13,6 @@ from ocp_utilities.infra import (
     assert_pods_failed_or_pending,
 )
 from pytest_testconfig import py_config
-from rhoas_kafka_mgmt_sdk.exceptions import ApiException
 
 from utilities.pytest_utils import exit_pytest_execution
 
@@ -68,17 +66,3 @@ def get_ocm_client(token):
         discard_unknown_keys=True,
     )
     return ocm_client.client
-
-
-def get_kafka_supported_region(rosa_regions, kafka_mgmt_api_instance):
-    cloud_provider = py_config["cloud_provider"]
-    LOGGER.info(
-        f"Searching for an available kafka cloud region under {cloud_provider} cloud provider"
-    )
-    for region_dict in rosa_regions:
-        region_id = region_dict["id"]
-        with contextlib.suppress(ApiException):
-            kafka_mgmt_api_instance.get_instance_types_by_cloud_provider_and_region(
-                cloud_provider=cloud_provider, cloud_region=region_id
-            )
-            return region_id

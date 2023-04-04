@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 import re
@@ -16,11 +17,11 @@ from ocp_utilities.utils import run_command
 from pytest_testconfig import py_config
 from python_terraform import IsNotFlagged, Terraform, TerraformCommandError
 
-from utilities.infra import get_kafka_supported_region
-from utilities.test_utils import create_kafka_topics_test
+from utilities.test_utils import kafka_record_in_consumer_pod_test
 
 
 LOGGER = logging.getLogger(__name__)
+AWS_KAFKA_SUPPORT = False
 
 
 pytestmark = pytest.mark.hypershift_install
@@ -66,13 +67,14 @@ def create_hypershift_cluster(
     cluster_subnets,
     openshift_channel_group,
     aws_compute_machine_type,
+    oidc_config_id,
 ):
     rosa_create_cluster_cmd = (
         f"rosa create cluster --cluster-name {cluster_parameters['cluster_name']} "
         f"--subnet-ids {cluster_subnets} --sts --mode auto --hosted-cp --machine-cidr 10.0.0.0/16 "
         f"--compute-machine-type {aws_compute_machine_type} --replicas {py_config['rosa_number_of_nodes']} "
         f"--tags dns:external --region {cluster_parameters['aws_region']} --channel-group {openshift_channel_group} "
-        f"--version {ocp_target_version} -y"
+        f"--version {ocp_target_version} --oidc-config-id {oidc_config_id} -y"
     )
     # ROSA output warnings results with command errors, using verify_stderr to ignore fail exit status in these cases.
     cmd_succeeded, cmd_out, cmd_err = run_command(
@@ -117,7 +119,7 @@ def rosa_hypershift_regions(rosa_regions):
 
 
 @pytest.fixture(scope="session")
-def aws_region(rosa_hypershift_regions):
+def aws_region(rosa_hypershift_regions, kafka_supported_regions):
     pyconfig_aws_region = py_config.get("aws_region")
     if pyconfig_aws_region:
         if pyconfig_aws_region in rosa_hypershift_regions:
@@ -126,17 +128,21 @@ def aws_region(rosa_hypershift_regions):
             f"{pyconfig_aws_region} is not supported, supported regions: {rosa_hypershift_regions}"
         )
     # If a region was not passed, use a hypershift-enabled region with the lowest number of used VPCs
-    region, vpcs = None, None
-    for _region in rosa_hypershift_regions:
-        num_vpcs = len(
+    # Preferably a kafka-supported region
+    regions_vpcs_dict = {
+        _region: len(
             boto3.client(service_name="ec2", region_name=_region).describe_vpcs()[
                 "Vpcs"
             ]
         )
-        if vpcs is None or num_vpcs < vpcs:
-            region = _region
-            vpcs = num_vpcs
-    return region
+        for _region in rosa_hypershift_regions
+    }
+    # If kafka-supported regions in regions_vpcs_dict keys
+    # Extended Iterable Unpacking- https://peps.python.org/pep-3132/
+    if {*kafka_supported_regions} & {*regions_vpcs_dict}:
+        return min(kafka_supported_regions, key=lambda reg: regions_vpcs_dict.get(reg))
+
+    return min(regions_vpcs_dict, key=regions_vpcs_dict.get)
 
 
 @pytest.fixture(scope="class")
@@ -223,11 +229,34 @@ def cluster_scope_class(ocm_client_scope_session, cluster_parameters):
 
 
 @pytest.fixture(scope="session")
-def skip_if_no_available_kafka_region(rosa_regions, kafka_mgmt_api_instance):
-    if not get_kafka_supported_region(
-        rosa_regions=rosa_regions, kafka_mgmt_api_instance=kafka_mgmt_api_instance
-    ):
-        pytest.skip("No available kafka regions found.")
+def skip_if_no_available_kafka_region(rosa_hypershift_regions, aws_region):
+    if not AWS_KAFKA_SUPPORT:
+        pytest.skip("Cluster is running in an unsupported kafka region.")
+
+
+@pytest.fixture(scope="class")
+def oidc_config_id(cluster_parameters):
+    oidc_prefix = cluster_parameters["cluster_name"]
+    LOGGER.info("Create oidc-config")
+    run_command(
+        command=shlex.split(
+            f"rosa create oidc-config --prefix {oidc_prefix} --mode auto -y"
+        )
+    )
+    _, cmd_out, _ = run_command(command=shlex.split("rosa list oidc-config -ojson"))
+    oidc_configs_list = json.loads(cmd_out)
+    _oidc_config_id = [
+        oidc_config["id"]
+        for oidc_config in oidc_configs_list
+        if oidc_prefix in oidc_config["secret_arn"]
+    ][0]
+    yield _oidc_config_id
+    LOGGER.info("Delete oidc-config")
+    run_command(
+        command=shlex.split(
+            f"rosa delete oidc-config --oidc-config-id {_oidc_config_id} --mode auto -y"
+        )
+    )
 
 
 @pytest.mark.usefixtures("exported_aws_credentials", "rosa_login", "vpcs")
@@ -240,6 +269,7 @@ class TestHypershiftCluster:
         cluster_parameters,
         ocp_target_version,
         cluster_subnets,
+        oidc_config_id,
     ):
         create_hypershift_cluster(
             cluster_parameters=cluster_parameters,
@@ -247,6 +277,7 @@ class TestHypershiftCluster:
             cluster_subnets=cluster_subnets,
             openshift_channel_group=py_config["openshift_channel_group"],
             aws_compute_machine_type=py_config["aws_compute_machine_type"],
+            oidc_config_id=oidc_config_id,
         )
 
     @pytest.mark.dependency(
@@ -275,10 +306,22 @@ class TestHypershiftCluster:
         )
 
     @pytest.mark.dependency(depends=["test_hypershift_cluster_ready"])
-    def test_kafka_instance_creation(
-        self, skip_if_no_available_kafka_region, kafka_topics
+    def test_kafka_record_in_pod(
+        self,
+        skip_if_no_available_kafka_region,
+        kafka_instance_ready,
+        kafka_instance_sa,
+        first_kafka_topic_name,
+        kafka_record,
+        consumer_pod,
     ):
-        create_kafka_topics_test(created_kafka_topics=kafka_topics)
+        kafka_record_in_consumer_pod_test(
+            consumer_pod=consumer_pod,
+            kafka_instance_ready=kafka_instance_ready,
+            kafka_instance_sa=kafka_instance_sa,
+            first_kafka_topic_name=first_kafka_topic_name,
+            kafka_record=kafka_record,
+        )
 
     @pytest.mark.dependency(depends=["test_hypershift_cluster_installation"])
     def test_hypershift_cluster_uninstall(self, cluster_scope_class):
