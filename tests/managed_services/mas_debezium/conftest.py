@@ -6,21 +6,18 @@ from ocp_resources.namespace import Namespace
 from ocp_resources.pod import Pod
 from ocp_resources.utils import TimeoutExpiredError, TimeoutSampler
 from ocp_utilities.infra import cluster_resource
-from rhoas_kafka_instance_sdk.api import acls_api, records_api, topics_api
+from rhoas_kafka_instance_sdk.api import acls_api, records_api
 from rhoas_kafka_instance_sdk.model.acl_binding import AclBinding
 from rhoas_kafka_instance_sdk.model.acl_operation import AclOperation
 from rhoas_kafka_instance_sdk.model.acl_pattern_type import AclPatternType
 from rhoas_kafka_instance_sdk.model.acl_permission_type import AclPermissionType
 from rhoas_kafka_instance_sdk.model.acl_resource_type import AclResourceType
-from rhoas_kafka_instance_sdk.model.config_entry import ConfigEntry
-from rhoas_kafka_instance_sdk.model.new_topic_input import NewTopicInput
 from rhoas_kafka_instance_sdk.model.record import Record
-from rhoas_kafka_instance_sdk.model.topic_settings import TopicSettings
 from rhoas_service_accounts_mgmt_sdk.model.service_account_create_request_data import (
     ServiceAccountCreateRequestData,
 )
 
-from utilities.constants import KAFKA_TOPICS_LIST, WAIT_STATUS_TIMEOUT
+from utilities.constants import WAIT_STATUS_TIMEOUT
 from utilities.infra import get_kafka_supported_region
 
 
@@ -124,32 +121,6 @@ def kafka_sa_acl_binding(kafka_instance_client, kafka_instance, kafka_instance_s
             operation=AclOperation("ALL"),
         )
         acl_api_instance.create_acl(acl_binding=acl_binding)
-
-
-@pytest.fixture(scope="class")
-def kafka_topics(kafka_instance_client, kafka_instance):
-    LOGGER.info(f"Creating kafka topics for {kafka_instance.name} kafka instance")
-
-    created_topics = []
-    kafka_topics_api_instance = topics_api.TopicsApi(api_client=kafka_instance_client)
-    for topic_name in KAFKA_TOPICS_LIST:
-        new_topic_input = NewTopicInput(
-            name=topic_name,
-            settings=TopicSettings(
-                num_partitions=1,
-                config=[
-                    ConfigEntry(
-                        key="cleanup.policy",
-                        value="delete",
-                    ),
-                ],
-            ),
-        )
-        created_topics.append(
-            kafka_topics_api_instance.create_topic(new_topic_input=new_topic_input)
-        )
-
-    return created_topics
 
 
 @pytest.fixture(scope="class")

@@ -15,9 +15,13 @@ from ocp_resources.utils import TimeoutExpiredError, TimeoutSampler
 from ocp_utilities.infra import get_client
 from ocp_utilities.utils import run_command
 from pytest_testconfig import py_config
+from rhoas_kafka_instance_sdk.api import topics_api
+from rhoas_kafka_instance_sdk.model.config_entry import ConfigEntry
+from rhoas_kafka_instance_sdk.model.new_topic_input import NewTopicInput
+from rhoas_kafka_instance_sdk.model.topic_settings import TopicSettings
 from rhoas_kafka_mgmt_sdk.model.kafka_request_payload import KafkaRequestPayload
 
-from utilities.constants import WAIT_STATUS_TIMEOUT
+from utilities.constants import KAFKA_TOPICS_LIST, WAIT_STATUS_TIMEOUT
 from utilities.infra import get_ocm_client
 
 
@@ -167,3 +171,29 @@ def kafka_mgmt_client(ocm_base_api_url, access_token):
 @pytest.fixture(scope="session")
 def kafka_mgmt_api_instance(kafka_mgmt_client):
     return rhoas_kafka_mgmt_sdk.api.default_api.DefaultApi(api_client=kafka_mgmt_client)
+
+
+@pytest.fixture(scope="class")
+def kafka_topics(kafka_instance_client, kafka_instance):
+    LOGGER.info(f"Creating kafka topics for {kafka_instance.name} kafka instance")
+
+    created_topics = []
+    kafka_topics_api_instance = topics_api.TopicsApi(api_client=kafka_instance_client)
+    for topic_name in KAFKA_TOPICS_LIST:
+        new_topic_input = NewTopicInput(
+            name=topic_name,
+            settings=TopicSettings(
+                num_partitions=1,
+                config=[
+                    ConfigEntry(
+                        key="cleanup.policy",
+                        value="delete",
+                    ),
+                ],
+            ),
+        )
+        created_topics.append(
+            kafka_topics_api_instance.create_topic(new_topic_input=new_topic_input)
+        )
+
+    return created_topics

@@ -223,7 +223,7 @@ def cluster_scope_class(ocm_client_scope_session, cluster_parameters):
 
 
 @pytest.fixture(scope="session")
-def skip_if_no_kafka_region(rosa_regions, kafka_mgmt_api_instance):
+def skip_if_no_available_kafka_region(rosa_regions, kafka_mgmt_api_instance):
     if not get_kafka_supported_region(
         rosa_regions=rosa_regions, kafka_mgmt_api_instance=kafka_mgmt_api_instance
     ):
@@ -275,7 +275,9 @@ class TestHypershiftCluster:
         )
 
     @pytest.mark.dependency(depends=["test_hypershift_cluster_ready"])
-    def test_kafka_instance_creation(self, skip_if_no_kafka_region, kafka_topics):
+    def test_kafka_instance_creation(
+        self, skip_if_no_available_kafka_region, kafka_topics
+    ):
         create_kafka_topics_test(created_kafka_topics=kafka_topics)
 
     @pytest.mark.dependency(depends=["test_hypershift_cluster_installation"])
