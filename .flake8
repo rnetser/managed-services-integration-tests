@@ -12,6 +12,20 @@ exclude =
     docs/*,
     .cache/*
 
+fcn_exclude_functions =
+    BASIC_LOGGER,
+    LOGGER,
+    logging,
+    addoption,
+    getgroup,
+    getoption,
+    get_plugin,
+    yaml,
+    json,
+    shutil,
+    datetime,
+    os,
+    mktemp,
 
 enable-extensions =
     FCN,
