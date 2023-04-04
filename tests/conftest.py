@@ -5,7 +5,10 @@ import shlex
 
 import pytest
 import rhoas_kafka_instance_sdk
+import rhoas_kafka_mgmt_sdk
+from auth.rhoas_auth import get_access_token
 from ocm_python_wrapper.cluster import Cluster
+from ocm_python_wrapper.ocm_client import OCMPythonClient
 from ocp_resources.node import Node
 from ocp_resources.utils import TimeoutExpiredError, TimeoutSampler
 from ocp_utilities.infra import get_client
@@ -137,3 +140,29 @@ def kafka_instance(kafka_mgmt_api_instance, kafka_supported_region):
             f"{kafka_list_sample}"
         )
         raise
+
+
+@pytest.fixture(scope="session")
+def ocm_base_api_url():
+    return OCMPythonClient.get_base_api_uri(api_host=py_config["api_server"])
+
+
+@pytest.fixture(scope="session")
+def access_token(ocm_token):
+    return get_access_token(offline_token=ocm_token)["access_token"]
+
+
+@pytest.fixture(scope="session")
+def kafka_mgmt_client(ocm_base_api_url, access_token):
+    # https://github.com/redhat-developer/app-services-sdk-python/tree/main/sdks/kafka_mgmt_sdk
+    configuration = rhoas_kafka_mgmt_sdk.Configuration(
+        host=ocm_base_api_url,
+        access_token=access_token,
+    )
+    with rhoas_kafka_mgmt_sdk.ApiClient(configuration=configuration) as api_client:
+        yield api_client
+
+
+@pytest.fixture(scope="session")
+def kafka_mgmt_api_instance(kafka_mgmt_client):
+    return rhoas_kafka_mgmt_sdk.api.default_api.DefaultApi(api_client=kafka_mgmt_client)
