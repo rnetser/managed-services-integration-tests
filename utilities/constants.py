@@ -4,3 +4,4 @@ KAFKA_TOPICS_LIST = [
     "debezium-cluster-offsets",
     "debezium-cluster-status",
 ]
+WAIT_STATUS_TIMEOUT = 120

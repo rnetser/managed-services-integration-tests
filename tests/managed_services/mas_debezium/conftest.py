@@ -1,15 +1,11 @@
-import contextlib
 import logging
 
 import pytest
-import rhoas_kafka_instance_sdk
-from constants import KAFKA_TOPICS_LIST
 from consumer_pod import ConsumerPod
 from ocp_resources.namespace import Namespace
 from ocp_resources.pod import Pod
 from ocp_resources.utils import TimeoutExpiredError, TimeoutSampler
 from ocp_utilities.infra import cluster_resource
-from pytest_testconfig import py_config
 from rhoas_kafka_instance_sdk.api import acls_api, records_api, topics_api
 from rhoas_kafka_instance_sdk.model.acl_binding import AclBinding
 from rhoas_kafka_instance_sdk.model.acl_operation import AclOperation
@@ -20,15 +16,15 @@ from rhoas_kafka_instance_sdk.model.config_entry import ConfigEntry
 from rhoas_kafka_instance_sdk.model.new_topic_input import NewTopicInput
 from rhoas_kafka_instance_sdk.model.record import Record
 from rhoas_kafka_instance_sdk.model.topic_settings import TopicSettings
-from rhoas_kafka_mgmt_sdk.exceptions import ApiException
-from rhoas_kafka_mgmt_sdk.model.kafka_request_payload import KafkaRequestPayload
 from rhoas_service_accounts_mgmt_sdk.model.service_account_create_request_data import (
     ServiceAccountCreateRequestData,
 )
 
+from utilities.constants import KAFKA_TOPICS_LIST, WAIT_STATUS_TIMEOUT
+from utilities.infra import get_kafka_supported_region
+
 
 LOGGER = logging.getLogger(__name__)
-WAIT_STATUS_TIMEOUT = 120
 
 
 class NoAvailableKafkaRegionsError(Exception):
@@ -37,65 +33,15 @@ class NoAvailableKafkaRegionsError(Exception):
 
 @pytest.fixture(scope="class")
 def kafka_supported_region(kafka_mgmt_api_instance, rosa_regions):
-    cloud_provider = py_config["cloud_provider"]
-    LOGGER.info(
-        f"Searching for an available kafka cloud region under {cloud_provider} cloud provider"
+    kafka_region = get_kafka_supported_region(
+        rosa_regions=rosa_regions, kafka_mgmt_api_instance=kafka_mgmt_api_instance
     )
-    for region_dict in rosa_regions:
-        region_id = region_dict["id"]
-        with contextlib.suppress(ApiException):
-            kafka_mgmt_api_instance.get_instance_types_by_cloud_provider_and_region(
-                cloud_provider=cloud_provider, cloud_region=region_id
-            )
-            return region_id
+    if kafka_region:
+        return kafka_region
 
     raise NoAvailableKafkaRegionsError(
         "No available aws cloud region to provision a kafka instance was found."
     )
-
-
-@pytest.fixture(scope="class")
-def kafka_instance(kafka_mgmt_api_instance, kafka_supported_region):
-    kafka_name = "msi-kafka"
-    LOGGER.info(f"Creating {kafka_name} kafka instance")
-    _async = True
-    kafka_request_payload = KafkaRequestPayload(
-        cloud_provider=py_config["cloud_provider"],
-        name=kafka_name,
-        region=kafka_supported_region,
-        plan="standard.x1",
-        reauthentication_enabled=True,
-    )
-    requested_kafka_dict = kafka_mgmt_api_instance.create_kafka(
-        _async=_async, kafka_request_payload=kafka_request_payload
-    )
-    assert (
-        requested_kafka_dict.status == "accepted"
-    ), f"Failed to create a kafka instance. API response:\n{requested_kafka_dict}"
-
-    yield requested_kafka_dict
-
-    LOGGER.info(f"Waiting for {requested_kafka_dict.name} kafka instance to be deleted")
-    kafka_mgmt_api_instance.delete_kafka_by_id(
-        async_req=True, _async=_async, id=requested_kafka_dict.id
-    )
-    kafka_list_samples = TimeoutSampler(
-        wait_timeout=WAIT_STATUS_TIMEOUT,
-        sleep=10,
-        func=kafka_mgmt_api_instance.get_kafkas,
-        search=f"name = {requested_kafka_dict.name}",
-    )
-    kafka_list_sample = None
-    try:
-        for kafka_list_sample in kafka_list_samples:
-            if kafka_list_sample.size == 0:
-                return
-    except TimeoutExpiredError:
-        LOGGER.error(
-            f"Timeout expired for deleting {kafka_name} kafka instance:\n"
-            f"{kafka_list_sample}"
-        )
-        raise
 
 
 @pytest.fixture(scope="class")
@@ -115,19 +61,6 @@ def kafka_instance_ready(kafka_mgmt_api_instance, kafka_instance):
     except TimeoutExpiredError:
         LOGGER.error("Timeout expired. Current kafka snapshot:\n" f"{kafka_sample}")
         raise
-
-
-@pytest.fixture(scope="class")
-def kafka_instance_client(kafka_instance_ready, access_token):
-    # https://github.com/redhat-developer/app-services-sdk-python/tree/main/sdks/kafka_instance_sdk
-    configuration = rhoas_kafka_instance_sdk.Configuration(
-        host=kafka_instance_ready.admin_api_server_url, access_token=access_token
-    )
-
-    with rhoas_kafka_instance_sdk.ApiClient(
-        configuration=configuration
-    ) as kafka_api_client:
-        yield kafka_api_client
 
 
 @pytest.fixture(scope="class")

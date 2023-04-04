@@ -16,9 +16,11 @@ from ocp_utilities.utils import run_command
 from pytest_testconfig import py_config
 from python_terraform import IsNotFlagged, Terraform, TerraformCommandError
 
+from utilities.infra import get_kafka_supported_region
+from utilities.test_utils import create_kafka_topics_test
+
 
 LOGGER = logging.getLogger(__name__)
-OPERATOR_NAME = "servicemeshoperator"
 
 
 pytestmark = pytest.mark.hypershift_install
@@ -220,8 +222,18 @@ def cluster_scope_class(ocm_client_scope_session, cluster_parameters):
         raise
 
 
+@pytest.fixture(scope="session")
+def skip_if_no_kafka_region(rosa_regions, kafka_mgmt_api_instance):
+    if not get_kafka_supported_region(
+        rosa_regions=rosa_regions, kafka_mgmt_api_instance=kafka_mgmt_api_instance
+    ):
+        pytest.skip("No available kafka regions found.")
+
+
 @pytest.mark.usefixtures("exported_aws_credentials", "rosa_login", "vpcs")
 class TestHypershiftCluster:
+    OPERATOR_NAME = "servicemeshoperator"
+
     @pytest.mark.dependency(name="test_hypershift_cluster_installation")
     def test_hypershift_cluster_installation(
         self,
@@ -250,7 +262,7 @@ class TestHypershiftCluster:
     def test_install_operator(self, cluster_scope_class):
         install_operator(
             admin_client=cluster_scope_class.ocp_client,
-            name=OPERATOR_NAME,
+            name=TestHypershiftCluster.OPERATOR_NAME,
             channel="stable",
             source="redhat-operators",
         )
@@ -258,8 +270,13 @@ class TestHypershiftCluster:
     @pytest.mark.dependency(depends=["test_install_operator"])
     def test_uninstall_operator(self, cluster_scope_class):
         uninstall_operator(
-            admin_client=cluster_scope_class.ocp_client, name=OPERATOR_NAME
+            admin_client=cluster_scope_class.ocp_client,
+            name=TestHypershiftCluster.OPERATOR_NAME,
         )
+
+    @pytest.mark.dependency(depends=["test_hypershift_cluster_ready"])
+    def test_kafka_instance_creation(self, skip_if_no_kafka_region, kafka_topics):
+        create_kafka_topics_test(created_kafka_topics=kafka_topics)
 
     @pytest.mark.dependency(depends=["test_hypershift_cluster_installation"])
     def test_hypershift_cluster_uninstall(self, cluster_scope_class):
