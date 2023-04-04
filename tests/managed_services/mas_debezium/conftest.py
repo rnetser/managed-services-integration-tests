@@ -42,25 +42,6 @@ def kafka_supported_region(kafka_mgmt_api_instance, rosa_regions):
 
 
 @pytest.fixture(scope="class")
-def kafka_instance_ready(kafka_mgmt_api_instance, kafka_instance):
-    LOGGER.info(f"Waiting for {kafka_instance.name} kafka instance to be ready")
-    kafka_samples = TimeoutSampler(
-        wait_timeout=450,
-        sleep=10,
-        func=kafka_mgmt_api_instance.get_kafka_by_id,
-        id=kafka_instance.id,
-    )
-    kafka_sample = None
-    try:
-        for kafka_sample in kafka_samples:
-            if kafka_sample.status == "ready":
-                return kafka_sample
-    except TimeoutExpiredError:
-        LOGGER.error("Timeout expired. Current kafka snapshot:\n" f"{kafka_sample}")
-        raise
-
-
-@pytest.fixture(scope="class")
 def kafka_instance_sa(
     kafka_instance_client, kafka_instance, service_accounts_api_instance
 ):
