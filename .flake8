@@ -26,6 +26,8 @@ fcn_exclude_functions =
     datetime,
     os,
     mktemp,
+    shlex,
+    contextlib,
 
 enable-extensions =
     FCN,
