@@ -1,14 +1,13 @@
-import logging
-
 import pytest as pytest
 from ocp_wrapper_data_collector.data_collector import (
     get_data_collector_base_dir,
     get_data_collector_dict,
     write_to_file,
 )
+from simple_logger.logger import get_logger
 
 
-LOGGER = logging.getLogger(__name__)
+LOGGER = get_logger(name=__name__)
 
 
 # TODO: Remove once added to openshift-python-utilities

@@ -1,11 +1,10 @@
-import logging
-
 import pytest
 from ocm_python_client import ApiException
 from ocp_resources.utils import TimeoutExpiredError, TimeoutSampler
+from simple_logger.logger import get_logger
 
 
-LOGGER = logging.getLogger(__name__)
+LOGGER = get_logger(name=__name__)
 
 
 class TestOCMPythonClient:

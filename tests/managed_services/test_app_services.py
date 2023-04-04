@@ -1,7 +1,5 @@
 # Sanity tests to work with https://github.com/redhat-developer/app-services-sdk-python APIs
 
-import logging
-
 import pytest
 import rhoas_connector_mgmt_sdk
 import rhoas_kafka_instance_sdk
@@ -11,9 +9,10 @@ import rhoas_smart_events_mgmt_sdk
 from rhoas_smart_events_mgmt_sdk.model.managed_resource_status import (
     ManagedResourceStatus,
 )
+from simple_logger.logger import get_logger
 
 
-LOGGER = logging.getLogger(__name__)
+LOGGER = get_logger(name=__name__)
 DEFAULT_PAGE_INDEX = "1"
 DEFAULT_NUM_ITEMS = "50"
 DEFAULT_ORDER_BY_STR = "name asc"

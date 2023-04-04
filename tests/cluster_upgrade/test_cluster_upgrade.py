@@ -1,6 +1,5 @@
-import logging
-
 import pytest
+from simple_logger.logger import get_logger
 
 from tests.cluster_upgrade.utils import (
     get_clusterversion,
@@ -8,7 +7,7 @@ from tests.cluster_upgrade.utils import (
 )
 
 
-LOGGER = logging.getLogger(__name__)
+LOGGER = get_logger(name=__name__)
 
 
 @pytest.mark.upgrade

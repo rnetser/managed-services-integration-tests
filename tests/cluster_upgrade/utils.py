@@ -1,4 +1,3 @@
-import logging
 from datetime import datetime, timedelta
 
 from dateutil.tz import tzutc
@@ -7,9 +6,10 @@ from ocp_resources.cluster_version import ClusterVersion
 from ocp_resources.utils import TimeoutExpiredError, TimeoutSampler
 from ocp_wrapper_data_collector.data_collector import collect_resources_yaml_instance
 from pytest_testconfig import py_config
+from simple_logger.logger import get_logger
 
 
-LOGGER = logging.getLogger(__name__)
+LOGGER = get_logger(name=__name__)
 UPGRADE_SCHEDULE_DELTA = 10 * 60
 TIMEOUT_180MIN = 180 * 60
 

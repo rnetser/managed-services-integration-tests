@@ -1,5 +1,3 @@
-import logging
-
 from ocm_python_wrapper.ocm_client import OCMPythonClient
 from ocp_utilities.exceptions import (
     NodeNotReadyError,
@@ -13,11 +11,12 @@ from ocp_utilities.infra import (
     assert_pods_failed_or_pending,
 )
 from pytest_testconfig import py_config
+from simple_logger.logger import get_logger
 
 from utilities.pytest_utils import exit_pytest_execution
 
 
-LOGGER = logging.getLogger(__name__)
+LOGGER = get_logger(name=__name__)
 
 
 def cluster_sanity(
