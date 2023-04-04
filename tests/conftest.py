@@ -6,6 +6,7 @@ import shlex
 import pytest
 import rhoas_kafka_instance_sdk
 import rhoas_kafka_mgmt_sdk
+import rhoas_kafka_mgmt_sdk.api.default_api
 from auth.rhoas_auth import get_access_token
 from ocm_python_wrapper.cluster import Cluster
 from ocm_python_wrapper.ocm_client import OCMPythonClient
