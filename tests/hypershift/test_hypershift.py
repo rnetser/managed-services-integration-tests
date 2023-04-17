@@ -1,7 +1,6 @@
 import logging
 import os
 import re
-import shlex
 import shutil
 
 import boto3
@@ -13,7 +12,6 @@ from ocm_python_wrapper.cluster import Cluster
 from ocm_python_wrapper.exceptions import MissingResourceError
 from ocp_resources.utils import TimeoutExpiredError, TimeoutSampler
 from ocp_utilities.operators import install_operator, uninstall_operator
-from ocp_utilities.utils import run_command
 from pytest_testconfig import py_config
 from python_terraform import IsNotFlagged, Terraform, TerraformCommandError
 
@@ -22,10 +20,6 @@ LOGGER = logging.getLogger(__name__)
 
 
 pytestmark = pytest.mark.hypershift_install
-
-
-class RosaLoginError(Exception):
-    pass
 
 
 class RegionNotFoundError(Exception):
@@ -85,15 +79,10 @@ def exported_aws_credentials():
 
 
 @pytest.fixture(scope="session")
-def rosa_login():
+def rosa_login(rosa_allowed_commands):
     api_server = py_config["api_server"]
     env_str = "--env=staging" if api_server == "stage" else ""
-    cmd_succeeded, _, cmd_err = run_command(
-        command=shlex.split(f"rosa login {env_str}")
-    )
-    if not cmd_succeeded:
-        LOGGER.error(f"Failed to login to ROSA in {api_server} with error: {cmd_err}")
-        raise RosaLoginError
+    rosa.cli.execute(command=f"login {env_str}", allowed_commands=rosa_allowed_commands)
 
 
 @pytest.fixture(scope="session")
@@ -222,18 +211,9 @@ def oidc_config_id(cluster_parameters, aws_region, rosa_allowed_commands):
         command=f"create oidc-config --prefix {oidc_prefix} --region {aws_region} --mode auto -y",
         allowed_commands=rosa_allowed_commands,
     )
-    # # ROSA output warnings result with command stderr even if the command succeeds, using verify_stderr to ignore.
-    # run_command(
-    #     command=shlex.split(
-    #         f"rosa create oidc-config --prefix {oidc_prefix} --region {aws_region} --mode auto -y"
-    #     ),
-    #     verify_stderr=False,
-    # )
     res = rosa.cli.execute(
         command="list oidc-config", allowed_commands=rosa_allowed_commands
     )
-    # _, cmd_out, _ = run_command(command=shlex.split("rosa  -ojson"))
-    # oidc_configs_list = json.loads(cmd_out)
     _oidc_config_id = [
         oidc_config["id"]
         for oidc_config in res
@@ -245,11 +225,6 @@ def oidc_config_id(cluster_parameters, aws_region, rosa_allowed_commands):
         command=f"delete oidc-config --oidc-config-id {_oidc_config_id} --region {aws_region} --mode auto -y",
         allowed_commands=rosa_allowed_commands,
     )
-    # run_command(
-    #     command=shlex.split(
-    #         f"rosa delete oidc-config --oidc-config-id {_oidc_config_id} --region {aws_region} --mode auto -y"
-    #     )
-    # )
 
 
 @pytest.mark.usefixtures("exported_aws_credentials", "rosa_login", "vpcs")
