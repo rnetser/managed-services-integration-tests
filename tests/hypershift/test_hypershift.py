@@ -256,6 +256,7 @@ class TestHypershiftCluster:
         cluster_parameters,
         ocp_target_version,
         cluster_subnets,
+        oidc_config_id,
     ):
         create_hypershift_cluster(
             cluster_parameters=cluster_parameters,
@@ -263,6 +264,7 @@ class TestHypershiftCluster:
             cluster_subnets=cluster_subnets,
             openshift_channel_group=py_config["openshift_channel_group"],
             aws_compute_machine_type=py_config["aws_compute_machine_type"],
+            oidc_config_id=oidc_config_id,
         )
 
     @pytest.mark.dependency(
