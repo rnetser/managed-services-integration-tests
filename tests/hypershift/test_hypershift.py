@@ -225,10 +225,12 @@ def cluster_scope_class(ocm_client_scope_session, cluster_parameters):
 def oidc_config_id(cluster_parameters, aws_region):
     oidc_prefix = cluster_parameters["cluster_name"]
     LOGGER.info("Create oidc-config")
+    # ROSA output warnings result with command stderr even if the command succeeds, using verify_stderr to ignore.
     run_command(
         command=shlex.split(
             f"rosa create oidc-config --prefix {oidc_prefix} --region {aws_region} --mode auto -y"
-        )
+        ),
+        verify_stderr=False,
     )
     _, cmd_out, _ = run_command(command=shlex.split("rosa list oidc-config -ojson"))
     oidc_configs_list = json.loads(cmd_out)
