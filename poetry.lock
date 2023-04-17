@@ -1412,7 +1412,7 @@ python-simple-logger = "*"
 type = "git"
 url = "https://github.com/RedHatQE/rosa-python-client.git"
 reference = "HEAD"
-resolved_reference = "a6c33b24a730c54ff2b4845064a43347632c879d"
+resolved_reference = "d88a9ce2abe74dba0ebceb9d90c78cbeffaa92fe"
 
 [[package]]
 name = "rsa"
