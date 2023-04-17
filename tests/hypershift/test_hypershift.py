@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 import re
@@ -18,7 +19,6 @@ from python_terraform import IsNotFlagged, Terraform, TerraformCommandError
 
 
 LOGGER = logging.getLogger(__name__)
-OPERATOR_NAME = "servicemeshoperator"
 
 
 pytestmark = pytest.mark.hypershift_install
@@ -64,13 +64,14 @@ def create_hypershift_cluster(
     cluster_subnets,
     openshift_channel_group,
     aws_compute_machine_type,
+    oidc_config_id,
 ):
     rosa_create_cluster_cmd = (
         f"rosa create cluster --cluster-name {cluster_parameters['cluster_name']} "
         f"--subnet-ids {cluster_subnets} --sts --mode auto --hosted-cp --machine-cidr 10.0.0.0/16 "
         f"--compute-machine-type {aws_compute_machine_type} --replicas {py_config['rosa_number_of_nodes']} "
         f"--tags dns:external --region {cluster_parameters['aws_region']} --channel-group {openshift_channel_group} "
-        f"--version {ocp_target_version} -y"
+        f"--version {ocp_target_version} --oidc-config-id {oidc_config_id} -y"
     )
     # ROSA output warnings results with command errors, using verify_stderr to ignore fail exit status in these cases.
     cmd_succeeded, cmd_out, cmd_err = run_command(
@@ -220,14 +221,44 @@ def cluster_scope_class(ocm_client_scope_session, cluster_parameters):
         raise
 
 
+@pytest.fixture(scope="class")
+def oidc_config_id(cluster_parameters, aws_region):
+    oidc_prefix = cluster_parameters["cluster_name"]
+    LOGGER.info("Create oidc-config")
+    # ROSA output warnings result with command stderr even if the command succeeds, using verify_stderr to ignore.
+    run_command(
+        command=shlex.split(
+            f"rosa create oidc-config --prefix {oidc_prefix} --region {aws_region} --mode auto -y"
+        ),
+        verify_stderr=False,
+    )
+    _, cmd_out, _ = run_command(command=shlex.split("rosa list oidc-config -ojson"))
+    oidc_configs_list = json.loads(cmd_out)
+    _oidc_config_id = [
+        oidc_config["id"]
+        for oidc_config in oidc_configs_list
+        if oidc_prefix in oidc_config["secret_arn"]
+    ][0]
+    yield _oidc_config_id
+    LOGGER.info("Delete oidc-config")
+    run_command(
+        command=shlex.split(
+            f"rosa delete oidc-config --oidc-config-id {_oidc_config_id} --region {aws_region} --mode auto -y"
+        )
+    )
+
+
 @pytest.mark.usefixtures("exported_aws_credentials", "rosa_login", "vpcs")
 class TestHypershiftCluster:
+    OPERATOR_NAME = "servicemeshoperator"
+
     @pytest.mark.dependency(name="test_hypershift_cluster_installation")
     def test_hypershift_cluster_installation(
         self,
         cluster_parameters,
         ocp_target_version,
         cluster_subnets,
+        oidc_config_id,
     ):
         create_hypershift_cluster(
             cluster_parameters=cluster_parameters,
@@ -235,6 +266,7 @@ class TestHypershiftCluster:
             cluster_subnets=cluster_subnets,
             openshift_channel_group=py_config["openshift_channel_group"],
             aws_compute_machine_type=py_config["aws_compute_machine_type"],
+            oidc_config_id=oidc_config_id,
         )
 
     @pytest.mark.dependency(
@@ -250,7 +282,7 @@ class TestHypershiftCluster:
     def test_install_operator(self, cluster_scope_class):
         install_operator(
             admin_client=cluster_scope_class.ocp_client,
-            name=OPERATOR_NAME,
+            name=TestHypershiftCluster.OPERATOR_NAME,
             channel="stable",
             source="redhat-operators",
         )
@@ -258,7 +290,8 @@ class TestHypershiftCluster:
     @pytest.mark.dependency(depends=["test_install_operator"])
     def test_uninstall_operator(self, cluster_scope_class):
         uninstall_operator(
-            admin_client=cluster_scope_class.ocp_client, name=OPERATOR_NAME
+            admin_client=cluster_scope_class.ocp_client,
+            name=TestHypershiftCluster.OPERATOR_NAME,
         )
 
     @pytest.mark.dependency(depends=["test_hypershift_cluster_installation"])
