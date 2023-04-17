@@ -4,6 +4,7 @@ import os
 import shlex
 
 import pytest
+import rosa.cli
 from ocm_python_wrapper.cluster import Cluster
 from ocp_resources.node import Node
 from ocp_utilities.infra import get_client
@@ -75,3 +76,8 @@ def rosa_regions():
         return json.loads(cmd_out)
     LOGGER.error(f"Failed to get ROSA regions, error: {cmd_err}")
     raise RosaCommandError
+
+
+@pytest.fixture(scope="session")
+def rosa_allowed_commands():
+    return rosa.cli.parse_help()
