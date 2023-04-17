@@ -74,4 +74,5 @@ def rosa_regions(rosa_allowed_commands):
 
 @pytest.fixture(scope="session")
 def rosa_allowed_commands():
+    # Get ROSA allowed commands to save execution time
     return rosa.cli.parse_help()
