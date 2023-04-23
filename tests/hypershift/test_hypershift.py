@@ -1,19 +1,17 @@
-import json
 import logging
 import os
 import re
-import shlex
 import shutil
 
 import boto3
 import pytest
+import rosa.cli
 import shortuuid
 from clouds.aws.aws_utils import verify_aws_credentials
 from ocm_python_wrapper.cluster import Cluster
-from ocm_python_wrapper.exceptions import ClusterInstallError, MissingResourceError
+from ocm_python_wrapper.exceptions import MissingResourceError
 from ocp_resources.utils import TimeoutExpiredError, TimeoutSampler
 from ocp_utilities.operators import install_operator, uninstall_operator
-from ocp_utilities.utils import run_command
 from pytest_testconfig import py_config
 from python_terraform import IsNotFlagged, Terraform, TerraformCommandError
 
@@ -22,10 +20,6 @@ LOGGER = logging.getLogger(__name__)
 
 
 pytestmark = pytest.mark.hypershift_install
-
-
-class RosaLoginError(Exception):
-    pass
 
 
 class RegionNotFoundError(Exception):
@@ -65,25 +59,18 @@ def create_hypershift_cluster(
     openshift_channel_group,
     aws_compute_machine_type,
     oidc_config_id,
+    rosa_allowed_commands,
 ):
     rosa_create_cluster_cmd = (
-        f"rosa create cluster --cluster-name {cluster_parameters['cluster_name']} "
+        f"create cluster --cluster-name {cluster_parameters['cluster_name']} "
         f"--subnet-ids {cluster_subnets} --sts --mode auto --hosted-cp --machine-cidr 10.0.0.0/16 "
         f"--compute-machine-type {aws_compute_machine_type} --replicas {py_config['rosa_number_of_nodes']} "
         f"--tags dns:external --region {cluster_parameters['aws_region']} --channel-group {openshift_channel_group} "
         f"--version {ocp_target_version} --oidc-config-id {oidc_config_id} -y"
     )
-    # ROSA output warnings results with command errors, using verify_stderr to ignore fail exit status in these cases.
-    cmd_succeeded, cmd_out, cmd_err = run_command(
-        command=shlex.split(rosa_create_cluster_cmd), verify_stderr=False
+    rosa.cli.execute(
+        command=rosa_create_cluster_cmd, allowed_commands=rosa_allowed_commands
     )
-
-    # ROSA output may contain WARNINGS which can be ignored; failing only if there are errors.
-    if "ERR" in cmd_err:
-        LOGGER.error(
-            f"Failed to install cluster: \noutput: {cmd_out}\nerror: {cmd_err}"
-        )
-        raise ClusterInstallError
 
 
 @pytest.fixture(scope="session")
@@ -92,15 +79,10 @@ def exported_aws_credentials():
 
 
 @pytest.fixture(scope="session")
-def rosa_login():
+def rosa_login(rosa_allowed_commands):
     api_server = py_config["api_server"]
     env_str = "--env=staging" if api_server == "stage" else ""
-    cmd_succeeded, _, cmd_err = run_command(
-        command=shlex.split(f"rosa login {env_str}")
-    )
-    if not cmd_succeeded:
-        LOGGER.error(f"Failed to login to ROSA in {api_server} with error: {cmd_err}")
-        raise RosaLoginError
+    rosa.cli.execute(command=f"login {env_str}", allowed_commands=rosa_allowed_commands)
 
 
 @pytest.fixture(scope="session")
@@ -222,29 +204,26 @@ def cluster_scope_class(ocm_client_scope_session, cluster_parameters):
 
 
 @pytest.fixture(scope="class")
-def oidc_config_id(cluster_parameters, aws_region):
+def oidc_config_id(cluster_parameters, aws_region, rosa_allowed_commands):
     oidc_prefix = cluster_parameters["cluster_name"]
     LOGGER.info("Create oidc-config")
-    # ROSA output warnings result with command stderr even if the command succeeds, using verify_stderr to ignore.
-    run_command(
-        command=shlex.split(
-            f"rosa create oidc-config --prefix {oidc_prefix} --region {aws_region} --mode auto -y"
-        ),
-        verify_stderr=False,
+    rosa.cli.execute(
+        command=f"create oidc-config --prefix {oidc_prefix} --region {aws_region} --mode auto -y",
+        allowed_commands=rosa_allowed_commands,
     )
-    _, cmd_out, _ = run_command(command=shlex.split("rosa list oidc-config -ojson"))
-    oidc_configs_list = json.loads(cmd_out)
+    res = rosa.cli.execute(
+        command="list oidc-config", allowed_commands=rosa_allowed_commands
+    )
     _oidc_config_id = [
         oidc_config["id"]
-        for oidc_config in oidc_configs_list
+        for oidc_config in res
         if oidc_prefix in oidc_config["secret_arn"]
     ][0]
     yield _oidc_config_id
     LOGGER.info("Delete oidc-config")
-    run_command(
-        command=shlex.split(
-            f"rosa delete oidc-config --oidc-config-id {_oidc_config_id} --region {aws_region} --mode auto -y"
-        )
+    rosa.cli.execute(
+        command=f"delete oidc-config --oidc-config-id {_oidc_config_id} --region {aws_region} --mode auto -y",
+        allowed_commands=rosa_allowed_commands,
     )
 
 
@@ -259,6 +238,7 @@ class TestHypershiftCluster:
         ocp_target_version,
         cluster_subnets,
         oidc_config_id,
+        rosa_allowed_commands,
     ):
         create_hypershift_cluster(
             cluster_parameters=cluster_parameters,
@@ -267,6 +247,7 @@ class TestHypershiftCluster:
             openshift_channel_group=py_config["openshift_channel_group"],
             aws_compute_machine_type=py_config["aws_compute_machine_type"],
             oidc_config_id=oidc_config_id,
+            rosa_allowed_commands=rosa_allowed_commands,
         )
 
     @pytest.mark.dependency(

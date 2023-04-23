@@ -1,13 +1,11 @@
-import json
 import logging
 import os
-import shlex
 
 import pytest
+import rosa.cli
 from ocm_python_wrapper.cluster import Cluster
 from ocp_resources.node import Node
 from ocp_utilities.infra import get_client
-from ocp_utilities.utils import run_command
 
 from utilities.infra import get_ocm_client
 
@@ -66,12 +64,15 @@ def ocp_target_version(request):
 
 
 @pytest.fixture(scope="session")
-def rosa_regions():
+def rosa_regions(rosa_allowed_commands):
     # A region (any region) is required for ROSA commands
-    cmd_succeeded, cmd_out, cmd_err = run_command(
-        command=shlex.split("rosa list regions -ojson --region us-west-2")
+    return rosa.cli.execute(
+        command="list regions --region us-west-2",
+        allowed_commands=rosa_allowed_commands,
     )
-    if cmd_succeeded:
-        return json.loads(cmd_out)
-    LOGGER.error(f"Failed to get ROSA regions, error: {cmd_err}")
-    raise RosaCommandError
+
+
+@pytest.fixture(scope="session")
+def rosa_allowed_commands():
+    # Get ROSA allowed commands to save execution time
+    return rosa.cli.parse_help()
