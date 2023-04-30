@@ -1,4 +1,3 @@
-import logging
 import os
 import re
 import shutil
@@ -14,9 +13,10 @@ from ocp_resources.utils import TimeoutExpiredError, TimeoutSampler
 from ocp_utilities.operators import install_operator, uninstall_operator
 from pytest_testconfig import py_config
 from python_terraform import IsNotFlagged, Terraform, TerraformCommandError
+from simple_logger.logger import get_logger
 
 
-LOGGER = logging.getLogger(__name__)
+LOGGER = get_logger(name=__name__)
 
 
 pytestmark = pytest.mark.hypershift_install

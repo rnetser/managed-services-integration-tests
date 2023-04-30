@@ -1,4 +1,3 @@
-import logging
 import os
 import shutil
 
@@ -13,12 +12,20 @@ from ocp_wrapper_data_collector.data_collector import (
     prepare_pytest_item_data_dir,
 )
 from pytest_testconfig import config as py_config
+from simple_logger.logger import get_logger
 
-from utilities.logger import separator, setup_logging
+
+LOGGER = get_logger(name=__name__)
+BASIC_LOGGER = get_logger(name="basic")
 
 
-LOGGER = logging.getLogger(__name__)
-BASIC_LOGGER = logging.getLogger("basic")
+def separator(symbol_, val=None):
+    terminal_width = shutil.get_terminal_size(fallback=(120, 40))[0]
+    if not val:
+        return f"{symbol_ * terminal_width}"
+
+    sepa = int((terminal_width - len(val) - 2) // 2)
+    return f"{symbol_ * sepa} {val} {symbol_ * sepa}"
 
 
 # pytest fixtures
@@ -58,11 +65,6 @@ def pytest_sessionstart(session):
     tests_log_file = session.config.getoption("pytest_log_file")
     if os.path.exists(tests_log_file):
         shutil.rmtree(tests_log_file, ignore_errors=True)
-
-    setup_logging(
-        log_file=tests_log_file,
-        log_level=logging.INFO,
-    )
 
 
 def pytest_report_teststatus(report, config):

@@ -1,4 +1,3 @@
-import logging
 import os
 
 import pytest
@@ -6,11 +5,12 @@ import rosa.cli
 from ocm_python_wrapper.cluster import Cluster
 from ocp_resources.node import Node
 from ocp_utilities.infra import get_client
+from simple_logger.logger import get_logger
 
 from utilities.infra import get_ocm_client
 
 
-LOGGER = logging.getLogger(__name__)
+LOGGER = get_logger(name=__name__)
 
 
 class RosaCommandError(Exception):

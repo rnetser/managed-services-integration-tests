@@ -31,6 +31,7 @@ shortuuid = "*"
 redhat-qe-cloud-tools = "*"
 boto3 = "*"
 rosa-python-client = {git = "https://github.com/RedHatQE/rosa-python-client.git"}
+python-simple-logger="*"
 
 [tool.poetry.dev-dependencies]
 ipdb = "*"
