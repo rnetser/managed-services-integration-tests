@@ -7,7 +7,6 @@ from ocp_resources.node import Node
 from ocp_utilities.infra import get_client
 from simple_logger.logger import get_logger
 
-
 from utilities.infra import get_ocm_client
 
 
