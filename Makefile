@@ -1,11 +1,11 @@
 # Building cluster-sanity container
 IMAGE_BUILD_CMD ?= "docker"
 IMAGE_REGISTRY ?= "quay.io"
-REGISTRY_NAMESPACE ?= "interop_qe_ms"
-OPERATOR_IMAGE_NAME="ms-interop-tests"
+ORG_NAME ?= "redhat_msi"
+IMAGE_NAME ?= "managed-services-integration-tests"
 IMAGE_TAG ?= "latest"
 
-FULL_OPERATOR_IMAGE ?= "$(IMAGE_REGISTRY)/$(REGISTRY_NAMESPACE)/$(OPERATOR_IMAGE_NAME):$(IMAGE_TAG)"
+FULL_OPERATOR_IMAGE ?= "$(IMAGE_REGISTRY)/$(ORG_NAME)/$(IMAGE_NAME):$(IMAGE_TAG)"
 
 all: check poetry run_cluster_sanity_tests build-container push-container
 
