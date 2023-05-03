@@ -1441,13 +1441,13 @@ six = "*"
 
 [[package]]
 name = "openshift-cluster-management-python-client"
-version = "1.0.21"
+version = "1.0.23"
 description = "A python client for https://api.openshift.com/api/ APIs"
 category = "main"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "openshift-cluster-management-python-client-1.0.21.tar.gz", hash = "sha256:2af3b3274c14b1a6d7605aeae670ae6de3efe7f052591d68b27b84e0c46f31c5"},
+    {file = "openshift-cluster-management-python-client-1.0.23.tar.gz", hash = "sha256:06dc4d19fcbcc58191e9ede78c0c96935c788616949c4045746de209a5082152"},
 ]
 
 [package.dependencies]
@@ -2906,4 +2906,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "dcf0b0c2289dc358f465c9ad706fdb4a54eaca765c13dad29da079aeb1381804"
+content-hash = "ae41e0bd90d8cb358312a6c7b1f117a448a394325b9c7b036092f534e5864c21"
