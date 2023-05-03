@@ -8,6 +8,7 @@ IMAGE_TAG ?= "latest"
 FULL_OPERATOR_IMAGE ?= "$(IMAGE_REGISTRY)/$(ORG_NAME)/$(IMAGE_NAME):$(IMAGE_TAG)"
 
 all: check poetry run_cluster_sanity_tests build-container push-container
+publish-image: build-container push-container
 
 check:
 	tox
