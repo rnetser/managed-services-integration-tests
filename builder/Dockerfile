@@ -23,7 +23,7 @@ WORKDIR managed-services-integration-tests
 
 # GH_HOST is needed as a workaround to access the repository in GitHub
 # https://github.com/cli/cli/issues/2680#issuecomment-1345491083
-RUN GH_HOST=foo gh -R https://github.com/openshift/rosa release download -p 'rosa-linux-amd64' -O /usr/bin/rosa && \
+RUN GH_HOST=dummy gh -R https://github.com/openshift/rosa release download -p 'rosa-linux-amd64' -O /usr/bin/rosa && \
     chmod +x /usr/bin/rosa && \
     python3 -m pip install pip --upgrade && \
     python3 -m pip install poetry && \
