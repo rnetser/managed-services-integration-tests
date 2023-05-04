@@ -15,7 +15,8 @@ RUN dnf -y install epel-release dnf-plugins-core && \
     libxml2-devel \
     openssl-devel \
     terraform \
-    gh
+    gh && \
+    dnf clean all && rm -rf /var/cache/yum
 
 COPY / managed-services-integration-tests/
 WORKDIR managed-services-integration-tests
@@ -33,7 +34,8 @@ RUN GH_HOST=foo gh -R https://github.com/openshift/rosa release download -p 'ros
     poetry env remove --all && \
     poetry install && \
     poetry export --without-hashes -n && \
-    poetry show
+    poetry show && \
+    find /managed-services-integration-tests/ -type d -name "__pycache__" -print0 | xargs -0 rm -rfv
 
 ENV OPENSHIFT_PYTHON_WRAPPER_LOG_LEVEL=DEBUG
 
