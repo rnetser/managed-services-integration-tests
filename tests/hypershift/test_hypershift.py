@@ -80,6 +80,9 @@ def exported_aws_credentials():
 
 @pytest.fixture(scope="session")
 def rosa_login(rosa_allowed_commands):
+    home_dir = py_config.get("home_dir")
+    if home_dir:
+        os.environ["HOME"] = home_dir
     api_server = py_config["api_server"]
     env_str = "--env=staging" if api_server == "stage" else ""
     rosa.cli.execute(command=f"login {env_str}", allowed_commands=rosa_allowed_commands)
@@ -208,7 +211,7 @@ def oidc_config_id(cluster_parameters, aws_region, rosa_allowed_commands):
     oidc_prefix = cluster_parameters["cluster_name"]
     LOGGER.info("Create oidc-config")
     rosa.cli.execute(
-        command=f"create oidc-config --prefix {oidc_prefix} --region {aws_region} --mode auto -y",
+        command=f"create oidc-config --managed=false --prefix {oidc_prefix} --region {aws_region} --mode auto -y",
         allowed_commands=rosa_allowed_commands,
     )
     res = rosa.cli.execute(
