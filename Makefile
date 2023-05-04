@@ -1,5 +1,5 @@
 # Building cluster-sanity container
-IMAGE_BUILD_CMD ?= "docker"
+IMAGE_BUILD_CMD = "$(shell which podman 2>/dev/null || which docker)"
 IMAGE_REGISTRY ?= "quay.io"
 ORG_NAME ?= "redhat_msi"
 IMAGE_NAME ?= "managed-services-integration-tests"
