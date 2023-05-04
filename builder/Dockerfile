@@ -16,7 +16,8 @@ RUN dnf -y install epel-release dnf-plugins-core && \
     openssl-devel \
     terraform \
     gh && \
-    dnf clean all && rm -rf /var/cache/yum
+    dnf clean all && \
+    rm -rf /var/cache/yum
 
 COPY / managed-services-integration-tests/
 WORKDIR managed-services-integration-tests
