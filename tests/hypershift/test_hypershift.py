@@ -11,6 +11,7 @@ from ocm_python_wrapper.cluster import Cluster
 from ocm_python_wrapper.exceptions import MissingResourceError
 from ocp_resources.utils import TimeoutExpiredError, TimeoutSampler
 from ocp_utilities.operators import install_operator, uninstall_operator
+from packaging import version
 from pytest_testconfig import py_config
 from python_terraform import IsNotFlagged, Terraform, TerraformCommandError
 from simple_logger.logger import get_logger
@@ -230,6 +231,28 @@ def oidc_config_id(cluster_parameters, aws_region, rosa_allowed_commands):
     )
 
 
+@pytest.fixture(scope="session")
+def hypershift_target_version(ocp_target_version, rosa_allowed_commands):
+    # Z-stream or explicit RC
+    if len(version.parse(ocp_target_version).release) == 3:
+        return ocp_target_version
+
+    rosa_versions = rosa.cli.execute(
+        command=f"list versions --channel-group {py_config['openshift_channel_group']}",
+        allowed_commands=rosa_allowed_commands,
+    )
+    # Excluding "ec" releases
+    target_version = max(
+        [
+            version.parse(ver["raw_id"])
+            for ver in rosa_versions
+            if ver["raw_id"].startswith("4.13") and "ec" not in ver["raw_id"]
+        ]
+    ).public
+    # version removes the 'rc' hyphen and period from the version, example: '4.13.0rc7' -> '4.13.0-rc.7'
+    return target_version.replace("rc", "-rc.")
+
+
 @pytest.mark.usefixtures("exported_aws_credentials", "rosa_login", "vpcs")
 class TestHypershiftCluster:
     OPERATOR_NAME = "servicemeshoperator"
@@ -238,14 +261,17 @@ class TestHypershiftCluster:
     def test_hypershift_cluster_installation(
         self,
         cluster_parameters,
-        ocp_target_version,
+        hypershift_target_version,
         cluster_subnets,
         oidc_config_id,
         rosa_allowed_commands,
     ):
+        LOGGER.info(
+            f"Test hypershift cluster install using {hypershift_target_version} OCP version"
+        )
         create_hypershift_cluster(
             cluster_parameters=cluster_parameters,
-            ocp_target_version=ocp_target_version,
+            ocp_target_version=hypershift_target_version,
             cluster_subnets=cluster_subnets,
             openshift_channel_group=py_config["openshift_channel_group"],
             aws_compute_machine_type=py_config["aws_compute_machine_type"],
