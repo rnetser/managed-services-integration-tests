@@ -246,7 +246,8 @@ def hypershift_target_version(ocp_target_version, rosa_allowed_commands):
         [
             version.parse(ver["raw_id"])
             for ver in rosa_versions
-            if ver["raw_id"].startswith("4.13") and "ec" not in ver["raw_id"]
+            if ver["raw_id"].startswith(ocp_target_version)
+            and "ec" not in ver["raw_id"]
         ]
     ).public
     # version removes the 'rc' hyphen and period from the version, example: '4.13.0rc7' -> '4.13.0-rc.7'
