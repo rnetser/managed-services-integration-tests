@@ -233,6 +233,7 @@ def oidc_config_id(cluster_parameters, aws_region, rosa_allowed_commands):
 
 @pytest.fixture(scope="session")
 def hypershift_target_version(ocp_target_version, rosa_allowed_commands):
+    """Return ocp_target_version if semantic version else return ROSA latest version based on ocp_target_version"""
     # Z-stream or explicit RC
     if len(version.parse(ocp_target_version).release) == 3:
         return ocp_target_version
