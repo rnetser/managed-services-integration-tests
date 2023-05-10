@@ -257,7 +257,8 @@ def hypershift_target_version(ocp_target_version, rosa_allowed_commands):
 
 @pytest.mark.usefixtures("exported_aws_credentials", "rosa_login", "vpcs")
 class TestHypershiftCluster:
-    OPERATOR_NAME = "servicemeshoperator"
+    OPERATOR_NAME = "rhods-operator"
+    OPERATOR_NAMESPACE = "redhat-ods-operator"
 
     @pytest.mark.dependency(name="test_hypershift_cluster_installation")
     def test_hypershift_cluster_installation(
@@ -295,6 +296,7 @@ class TestHypershiftCluster:
         install_operator(
             admin_client=cluster_scope_class.ocp_client,
             name=TestHypershiftCluster.OPERATOR_NAME,
+            operator_namespace=TestHypershiftCluster.OPERATOR_NAMESPACE,
             channel="stable",
             source="redhat-operators",
         )
