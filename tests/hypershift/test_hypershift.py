@@ -216,7 +216,8 @@ def oidc_config_id(cluster_parameters, aws_region, rosa_allowed_commands):
         allowed_commands=rosa_allowed_commands,
     )
     res = rosa.cli.execute(
-        command="list oidc-config", allowed_commands=rosa_allowed_commands
+        command=f"list oidc-config --region {aws_region}",
+        allowed_commands=rosa_allowed_commands,
     )
     _oidc_config_id = [
         oidc_config["id"]
