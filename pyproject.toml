@@ -30,7 +30,7 @@ pytest-order = "*"
 shortuuid = "*"
 redhat-qe-cloud-tools = "*"
 boto3 = "*"
-rosa-python-client = {git = "https://github.com/RedHatQE/rosa-python-client.git"}
+rosa-python-client = "*"
 python-simple-logger="*"
 packaging = "*"
 
