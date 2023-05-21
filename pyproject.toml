@@ -17,7 +17,7 @@ openshift-cluster-management-python-wrapper = "*"
 openshift-python-wrapper-data-collector = "*"
 pytest = "*"
 pytest-testconfig = "*"
-pytest-progress = "==1.2.2"  # https://github.com/ssrikanta/pytest-progress
+pytest-progress = "==1.2.5"  # https://github.com/ssrikanta/pytest-progress
 hvac = "*"
 pytz = "*"
 pip = "*"

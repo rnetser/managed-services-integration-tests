@@ -2047,13 +2047,13 @@ pytest = [
 
 [[package]]
 name = "pytest-progress"
-version = "1.2.2"
+version = "1.2.5"
 description = "pytest plugin for instant test progress status"
 category = "main"
 optional = false
 python-versions = "*"
 files = [
-    {file = "pytest-progress-1.2.2.tar.gz", hash = "sha256:9a3f072a67f79bd906b71ba381be64b20200124a34da1eec5affe42ec40f413d"},
+    {file = "pytest-progress-1.2.5.tar.gz", hash = "sha256:24f28ec3d8b3a8cd0babb18a2494cc5387c86d0b96b6edfb3f3ddb3db43b8ed4"},
 ]
 
 [package.dependencies]
@@ -2881,4 +2881,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "84354335864bfca2ff7a259090fcd05a28a7523910ac78d29ef09b1d22960775"
+content-hash = "e45bb35dc890cedb491e431456f3d87d2591f0eba21f0959f114d0383581cffa"
