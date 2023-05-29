@@ -21,6 +21,7 @@ RUN dnf -y install epel-release dnf-plugins-core && \
 
 COPY / managed-services-integration-tests/
 WORKDIR managed-services-integration-tests
+RUN ln -s /usr/bin/python3 /usr/bin/python
 
 # GH_HOST is needed as a workaround to access the repository in GitHub
 # https://github.com/cli/cli/issues/2680#issuecomment-1345491083
@@ -32,7 +33,6 @@ RUN GH_HOST=dummy gh -R https://github.com/openshift/rosa release download -p 'r
     poetry config virtualenvs.in-project true && \
     poetry config installer.max-workers 10 && \
     poetry config --list && \
-    poetry env remove --all && \
     poetry install && \
     poetry export --without-hashes -n && \
     poetry show && \

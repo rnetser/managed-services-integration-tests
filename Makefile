@@ -22,7 +22,7 @@ run_cluster_sanity_tests:
 	poetry run pytest tests/cluster_sanity
 
 build-container:
-	$(IMAGE_BUILD_CMD) build --no-cache -f builder/Dockerfile -t $(FULL_OPERATOR_IMAGE) .
+	$(IMAGE_BUILD_CMD) build --no-cache -f Dockerfile -t $(FULL_OPERATOR_IMAGE) .
 
 push-container:
 	$(IMAGE_BUILD_CMD) push $(FULL_OPERATOR_IMAGE)
