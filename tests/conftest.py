@@ -69,7 +69,7 @@ def rosa_regions(rosa_allowed_commands):
     return rosa.cli.execute(
         command="list regions --region us-west-2",
         allowed_commands=rosa_allowed_commands,
-    )
+    )["out"]
 
 
 @pytest.fixture(scope="session")

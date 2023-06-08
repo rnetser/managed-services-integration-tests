@@ -218,7 +218,7 @@ def oidc_config_id(cluster_parameters, aws_region, rosa_allowed_commands):
     res = rosa.cli.execute(
         command=f"list oidc-config --region {aws_region}",
         allowed_commands=rosa_allowed_commands,
-    )
+    )["out"]
     _oidc_config_id = [
         oidc_config["id"]
         for oidc_config in res
@@ -242,7 +242,7 @@ def hypershift_target_version(ocp_target_version, rosa_allowed_commands):
     rosa_versions = rosa.cli.execute(
         command=f"list versions --channel-group {py_config['openshift_channel_group']}",
         allowed_commands=rosa_allowed_commands,
-    )
+    )["out"]
     # Excluding "ec" releases
     target_version = max(
         [
