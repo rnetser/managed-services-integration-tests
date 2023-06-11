@@ -2380,13 +2380,13 @@ full = ["numpy"]
 
 [[package]]
 name = "redhat-qe-cloud-tools"
-version = "1.0.5"
+version = "1.0.6"
 description = "Python utilities to manage cloud services, such as AWS."
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "redhat_qe_cloud_tools-1.0.5-py3-none-any.whl", hash = "sha256:15a300041a3e62e7a2363e180529995730d8076483d3439f10b45f631613a5bf"},
-    {file = "redhat_qe_cloud_tools-1.0.5.tar.gz", hash = "sha256:d945459965816295038a9532de2b140dff2f862a504e28de8b4475aefb66f878"},
+    {file = "redhat_qe_cloud_tools-1.0.6-py3-none-any.whl", hash = "sha256:624905d047ac9a3d01598094410d6be5d28102a5fdf04aa938fe82fe8a026925"},
+    {file = "redhat_qe_cloud_tools-1.0.6.tar.gz", hash = "sha256:5e0b442e86edf90675a8755a220673e70eb4456174bf019a256453a50bcde463"},
 ]
 
 [package.dependencies]
@@ -2394,6 +2394,7 @@ boto3 = "*"
 click = "*"
 colorlog = "*"
 configparser = "*"
+openshift-python-utilities = "*"
 python-simple-logger = "*"
 
 [[package]]
