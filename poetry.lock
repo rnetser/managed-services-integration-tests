@@ -1778,7 +1778,7 @@ name = "pycparser"
 version = "2.21"
 description = "C parser in Python"
 optional = false
-python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
+python-versions = "*"
 files = [
     {file = "pycparser-2.21-py2.py3-none-any.whl", hash = "sha256:8ee45429555515e1f6b185e78100aea234072576aa43ab53aefcae078162fca9"},
     {file = "pycparser-2.21.tar.gz", hash = "sha256:e644fdec12f7872f86c58ff790da456218b10f863970249516d60a5eaca77206"},
@@ -2468,13 +2468,13 @@ urllib3 = ">=1.25.3,<2.0.0"
 
 [[package]]
 name = "rosa-python-client"
-version = "1.0.8"
+version = "1.0.9"
 description = "Wrapper for rosa cli"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "rosa_python_client-1.0.8-py3-none-any.whl", hash = "sha256:e1e18b3fb1dc99ac58eb7b62513b4834c89b58cb21527532decbe1fac0c82df1"},
-    {file = "rosa_python_client-1.0.8.tar.gz", hash = "sha256:dc07c4c7f8571cdc4e70475ff225147e2345e26055b5c1c4a2418dc1d9a6cbe0"},
+    {file = "rosa_python_client-1.0.9-py3-none-any.whl", hash = "sha256:7e85c974d9b19ef941549f925dc4ac26565b6fd1a4601cd5638d708e4ca56983"},
+    {file = "rosa_python_client-1.0.9.tar.gz", hash = "sha256:41a2f002950379b5873fc9b3eb5e1684fc6e75788ab2300be599fb1b2c5c167a"},
 ]
 
 [package.dependencies]
