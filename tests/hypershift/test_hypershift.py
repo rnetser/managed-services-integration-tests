@@ -215,6 +215,7 @@ def oidc_config_id(
         command=f"list oidc-config --region {aws_region}",
         allowed_commands=rosa_allowed_commands,
         ocm_client=ocm_client_scope_session,
+        aws_region=aws_region,
     )["out"]
     _oidc_config_id = [
         oidc_config["id"]
@@ -233,7 +234,7 @@ def oidc_config_id(
 
 @pytest.fixture(scope="session")
 def hypershift_target_version(
-    ocp_target_version, rosa_allowed_commands, ocm_client_scope_session
+    ocp_target_version, rosa_allowed_commands, ocm_client_scope_session, aws_region
 ):
     """Return ocp_target_version if semantic version else return ROSA latest version based on ocp_target_version"""
     # Z-stream or explicit RC
@@ -243,6 +244,7 @@ def hypershift_target_version(
     rosa_versions = rosa.cli.execute(
         command=f"list versions --channel-group {py_config['openshift_channel_group']}",
         allowed_commands=rosa_allowed_commands,
+        aws_region=aws_region,
         ocm_client=ocm_client_scope_session,
     )["out"]
     # Excluding "ec" releases
