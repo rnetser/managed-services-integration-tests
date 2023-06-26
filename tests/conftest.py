@@ -5,7 +5,6 @@ import rosa.cli
 from ocm_python_wrapper.cluster import Cluster
 from ocp_resources.node import Node
 from ocp_utilities.infra import get_client
-from pytest_testconfig import py_config
 from simple_logger.logger import get_logger
 
 from utilities.infra import get_ocm_client
@@ -65,13 +64,12 @@ def ocp_target_version(request):
 
 
 @pytest.fixture(scope="session")
-def rosa_regions(ocm_client_scope_session, ocm_api_server, rosa_allowed_commands):
+def rosa_regions(ocm_client_scope_session, rosa_allowed_commands):
     # A region (any region) is required for ROSA commands
     return rosa.cli.execute(
         command="list regions",
         allowed_commands=rosa_allowed_commands,
         aws_region="us-west-2",
-        ocm_env=ocm_api_server,
         ocm_client=ocm_client_scope_session,
     )["out"]
 
@@ -80,8 +78,3 @@ def rosa_regions(ocm_client_scope_session, ocm_api_server, rosa_allowed_commands
 def rosa_allowed_commands():
     # Get ROSA allowed commands to save execution time
     return rosa.cli.parse_help()
-
-
-@pytest.fixture(scope="session")
-def ocm_api_server():
-    return "staging" if py_config["ocm_api_server"] == "stage" else "production"

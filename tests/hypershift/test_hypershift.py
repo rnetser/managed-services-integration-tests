@@ -60,7 +60,6 @@ def create_hypershift_cluster(
     aws_compute_machine_type,
     oidc_config_id,
     rosa_allowed_commands,
-    api_server,
     ocm_client,
 ):
     rosa_create_cluster_cmd = (
@@ -74,7 +73,6 @@ def create_hypershift_cluster(
         command=rosa_create_cluster_cmd,
         allowed_commands=rosa_allowed_commands,
         aws_region=cluster_parameters["aws_region"],
-        ocm_env=api_server,
         ocm_client=ocm_client,
     )
 
@@ -202,7 +200,6 @@ def oidc_config_id(
     cluster_parameters,
     aws_region,
     rosa_allowed_commands,
-    ocm_api_server,
     ocm_client_scope_session,
 ):
     oidc_prefix = cluster_parameters["cluster_name"]
@@ -211,13 +208,11 @@ def oidc_config_id(
         command=f"create oidc-config --managed=false --prefix {oidc_prefix}",
         allowed_commands=rosa_allowed_commands,
         aws_region=aws_region,
-        ocm_env=ocm_api_server,
         ocm_client=ocm_client_scope_session,
     )
     res = rosa.cli.execute(
         command=f"list oidc-config --region {aws_region}",
         allowed_commands=rosa_allowed_commands,
-        ocm_env=ocm_api_server,
         ocm_client=ocm_client_scope_session,
     )["out"]
     _oidc_config_id = [
@@ -231,14 +226,13 @@ def oidc_config_id(
         command=f"delete oidc-config --oidc-config-id {_oidc_config_id}",
         allowed_commands=rosa_allowed_commands,
         aws_region=aws_region,
-        ocm_env=ocm_api_server,
         ocm_client=ocm_client_scope_session,
     )
 
 
 @pytest.fixture(scope="session")
 def hypershift_target_version(
-    ocp_target_version, rosa_allowed_commands, ocm_api_server, ocm_client_scope_session
+    ocp_target_version, rosa_allowed_commands, ocm_client_scope_session
 ):
     """Return ocp_target_version if semantic version else return ROSA latest version based on ocp_target_version"""
     # Z-stream or explicit RC
@@ -248,7 +242,6 @@ def hypershift_target_version(
     rosa_versions = rosa.cli.execute(
         command=f"list versions --channel-group {py_config['openshift_channel_group']}",
         allowed_commands=rosa_allowed_commands,
-        ocm_env=ocm_api_server,
         ocm_client=ocm_client_scope_session,
     )["out"]
     # Excluding "ec" releases
@@ -276,7 +269,6 @@ class TestHypershiftCluster:
         cluster_subnets,
         oidc_config_id,
         rosa_allowed_commands,
-        ocm_api_server,
         ocm_client_scope_session,
     ):
         LOGGER.info(
@@ -290,7 +282,6 @@ class TestHypershiftCluster:
             aws_compute_machine_type=py_config["aws_compute_machine_type"],
             oidc_config_id=oidc_config_id,
             rosa_allowed_commands=rosa_allowed_commands,
-            api_server=ocm_api_server,
             ocm_client=ocm_client_scope_session,
         )
 
