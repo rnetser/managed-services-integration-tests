@@ -72,7 +72,7 @@ def create_hypershift_cluster(
     rosa.cli.execute(
         command=rosa_create_cluster_cmd,
         allowed_commands=rosa_allowed_commands,
-        aws_region={cluster_parameters["aws_region"]},
+        aws_region=cluster_parameters["aws_region"],
     )
 
 
