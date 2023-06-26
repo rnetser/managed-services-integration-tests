@@ -6,7 +6,6 @@ import boto3
 import pytest
 import rosa.cli
 import shortuuid
-from clouds.aws.aws_utils import verify_aws_credentials
 from ocm_python_wrapper.cluster import Cluster
 from ocm_python_wrapper.exceptions import MissingResourceError
 from ocp_resources.utils import TimeoutExpiredError, TimeoutSampler
@@ -81,11 +80,6 @@ def create_hypershift_cluster(
 @pytest.fixture(scope="session")
 def api_server():
     return py_config["api_server"]
-
-
-@pytest.fixture(scope="session")
-def exported_aws_credentials():
-    verify_aws_credentials()
 
 
 @pytest.fixture(scope="session")
@@ -261,7 +255,7 @@ def hypershift_target_version(ocp_target_version, rosa_allowed_commands, api_ser
     return target_version.replace("rc", "-rc.")
 
 
-@pytest.mark.usefixtures("exported_aws_credentials", "vpcs")
+@pytest.mark.usefixtures("vpcs")
 class TestHypershiftCluster:
     OPERATOR_NAME = "servicemeshoperator"
 
