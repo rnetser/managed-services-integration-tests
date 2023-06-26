@@ -210,6 +210,7 @@ def oidc_config_id(
         aws_region=aws_region,
         ocm_client=ocm_client_scope_session,
     )
+    # `rosa list oidc-config` command does not have `region` as part of the help menu
     res = rosa.cli.execute(
         command=f"list oidc-config --region {aws_region}",
         allowed_commands=rosa_allowed_commands,
