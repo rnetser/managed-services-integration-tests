@@ -66,11 +66,13 @@ def create_hypershift_cluster(
         f"create cluster --cluster-name {cluster_parameters['cluster_name']} "
         f"--subnet-ids {cluster_subnets} --sts --hosted-cp --machine-cidr 10.0.0.0/16 "
         f"--compute-machine-type {aws_compute_machine_type} --replicas {py_config['rosa_number_of_nodes']} "
-        f"--tags dns:external --region {cluster_parameters['aws_region']} --channel-group {openshift_channel_group} "
+        f"--tags dns:external --channel-group {openshift_channel_group} "
         f"--version {ocp_target_version} --oidc-config-id {oidc_config_id}"
     )
     rosa.cli.execute(
-        command=rosa_create_cluster_cmd, allowed_commands=rosa_allowed_commands
+        command=rosa_create_cluster_cmd,
+        allowed_commands=rosa_allowed_commands,
+        aws_region={cluster_parameters["aws_region"]},
     )
 
 
@@ -216,8 +218,9 @@ def oidc_config_id(cluster_parameters, aws_region, rosa_allowed_commands):
         allowed_commands=rosa_allowed_commands,
     )
     res = rosa.cli.execute(
-        command=f"list oidc-config --region {aws_region}",
+        command="list oidc-config",
         allowed_commands=rosa_allowed_commands,
+        aws_region=aws_region,
     )["out"]
     _oidc_config_id = [
         oidc_config["id"]
@@ -227,8 +230,9 @@ def oidc_config_id(cluster_parameters, aws_region, rosa_allowed_commands):
     yield _oidc_config_id
     LOGGER.info("Delete oidc-config")
     rosa.cli.execute(
-        command=f"delete oidc-config --oidc-config-id {_oidc_config_id} --region {aws_region}",
+        command=f"delete oidc-config --oidc-config-id {_oidc_config_id}",
         allowed_commands=rosa_allowed_commands,
+        aws_region=aws_region,
     )
 
 
