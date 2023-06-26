@@ -56,7 +56,7 @@ def cluster_sanity(
 
 
 def get_ocm_client(token):
-    api_host = py_config["api_server"]
+    api_host = py_config["ocm_api_server"]
     LOGGER.info(f"Running against {api_host}")
     ocm_client = OCMPythonClient(
         token=token.strip(),

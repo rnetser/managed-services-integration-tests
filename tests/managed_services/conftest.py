@@ -16,7 +16,7 @@ from rhoas_smart_events_mgmt_sdk.api import bridges_api
 
 @pytest.fixture(scope="session")
 def ocm_base_api_url():
-    return OCMPythonClient.get_base_api_uri(api_host=py_config["api_server"])
+    return OCMPythonClient.get_base_api_uri(api_host=py_config["ocm_api_server"])
 
 
 @pytest.fixture(scope="session")
