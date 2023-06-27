@@ -2492,14 +2492,14 @@ full = ["numpy"]
 
 [[package]]
 name = "redhat-qe-cloud-tools"
-version = "1.0.6"
+version = "1.0.7"
 description = "Python utilities to manage cloud services, such as AWS."
 category = "main"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "redhat_qe_cloud_tools-1.0.6-py3-none-any.whl", hash = "sha256:624905d047ac9a3d01598094410d6be5d28102a5fdf04aa938fe82fe8a026925"},
-    {file = "redhat_qe_cloud_tools-1.0.6.tar.gz", hash = "sha256:5e0b442e86edf90675a8755a220673e70eb4456174bf019a256453a50bcde463"},
+    {file = "redhat_qe_cloud_tools-1.0.7-py3-none-any.whl", hash = "sha256:98c851fa22d56fa124540fbe408fecc199473bec7d9547f7dc905f4f1925d414"},
+    {file = "redhat_qe_cloud_tools-1.0.7.tar.gz", hash = "sha256:5fb45d811c77be50c920db7c72126d5fbf37480a55aa1cb17b2d4e1f17a7b06d"},
 ]
 
 [package.dependencies]
