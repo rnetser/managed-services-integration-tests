@@ -6,7 +6,6 @@ import boto3
 import pytest
 import rosa.cli
 import shortuuid
-from clouds.aws.aws_utils import verify_aws_credentials
 from ocm_python_wrapper.cluster import Cluster
 from ocm_python_wrapper.exceptions import MissingResourceError
 from ocp_resources.utils import TimeoutExpiredError, TimeoutSampler
@@ -61,32 +60,21 @@ def create_hypershift_cluster(
     aws_compute_machine_type,
     oidc_config_id,
     rosa_allowed_commands,
+    ocm_client,
 ):
     rosa_create_cluster_cmd = (
         f"create cluster --cluster-name {cluster_parameters['cluster_name']} "
         f"--subnet-ids {cluster_subnets} --sts --hosted-cp --machine-cidr 10.0.0.0/16 "
         f"--compute-machine-type {aws_compute_machine_type} --replicas {py_config['rosa_number_of_nodes']} "
-        f"--tags dns:external --region {cluster_parameters['aws_region']} --channel-group {openshift_channel_group} "
+        f"--tags dns:external --channel-group {openshift_channel_group} "
         f"--version {ocp_target_version} --oidc-config-id {oidc_config_id}"
     )
     rosa.cli.execute(
-        command=rosa_create_cluster_cmd, allowed_commands=rosa_allowed_commands
+        command=rosa_create_cluster_cmd,
+        allowed_commands=rosa_allowed_commands,
+        aws_region=cluster_parameters["aws_region"],
+        ocm_client=ocm_client,
     )
-
-
-@pytest.fixture(scope="session")
-def exported_aws_credentials():
-    verify_aws_credentials()
-
-
-@pytest.fixture(scope="session")
-def rosa_login(rosa_allowed_commands):
-    home_dir = py_config.get("home_dir")
-    if home_dir:
-        os.environ["HOME"] = home_dir
-    api_server = py_config["api_server"]
-    env_str = "--env=staging" if api_server == "stage" else ""
-    rosa.cli.execute(command=f"login {env_str}", allowed_commands=rosa_allowed_commands)
 
 
 @pytest.fixture(scope="session")
@@ -208,16 +196,26 @@ def cluster_scope_class(ocm_client_scope_session, cluster_parameters):
 
 
 @pytest.fixture(scope="class")
-def oidc_config_id(cluster_parameters, aws_region, rosa_allowed_commands):
+def oidc_config_id(
+    cluster_parameters,
+    aws_region,
+    rosa_allowed_commands,
+    ocm_client_scope_session,
+):
     oidc_prefix = cluster_parameters["cluster_name"]
     LOGGER.info("Create oidc-config")
     rosa.cli.execute(
-        command=f"create oidc-config --managed=false --prefix {oidc_prefix} --region {aws_region}",
+        command=f"create oidc-config --managed=false --prefix {oidc_prefix}",
         allowed_commands=rosa_allowed_commands,
+        aws_region=aws_region,
+        ocm_client=ocm_client_scope_session,
     )
+    # `rosa list oidc-config` command does not have `region` as part of the help menu
     res = rosa.cli.execute(
         command=f"list oidc-config --region {aws_region}",
         allowed_commands=rosa_allowed_commands,
+        ocm_client=ocm_client_scope_session,
+        aws_region=aws_region,
     )["out"]
     _oidc_config_id = [
         oidc_config["id"]
@@ -227,13 +225,17 @@ def oidc_config_id(cluster_parameters, aws_region, rosa_allowed_commands):
     yield _oidc_config_id
     LOGGER.info("Delete oidc-config")
     rosa.cli.execute(
-        command=f"delete oidc-config --oidc-config-id {_oidc_config_id} --region {aws_region}",
+        command=f"delete oidc-config --oidc-config-id {_oidc_config_id}",
         allowed_commands=rosa_allowed_commands,
+        aws_region=aws_region,
+        ocm_client=ocm_client_scope_session,
     )
 
 
 @pytest.fixture(scope="session")
-def hypershift_target_version(ocp_target_version, rosa_allowed_commands):
+def hypershift_target_version(
+    ocp_target_version, rosa_allowed_commands, ocm_client_scope_session, aws_region
+):
     """Return ocp_target_version if semantic version else return ROSA latest version based on ocp_target_version"""
     # Z-stream or explicit RC
     if len(version.parse(ocp_target_version).release) == 3:
@@ -242,6 +244,8 @@ def hypershift_target_version(ocp_target_version, rosa_allowed_commands):
     rosa_versions = rosa.cli.execute(
         command=f"list versions --channel-group {py_config['openshift_channel_group']}",
         allowed_commands=rosa_allowed_commands,
+        aws_region=aws_region,
+        ocm_client=ocm_client_scope_session,
     )["out"]
     # Excluding "ec" releases
     target_version = max(
@@ -256,7 +260,7 @@ def hypershift_target_version(ocp_target_version, rosa_allowed_commands):
     return target_version.replace("rc", "-rc.")
 
 
-@pytest.mark.usefixtures("exported_aws_credentials", "rosa_login", "vpcs")
+@pytest.mark.usefixtures("vpcs")
 class TestHypershiftCluster:
     OPERATOR_NAME = "servicemeshoperator"
 
@@ -268,6 +272,7 @@ class TestHypershiftCluster:
         cluster_subnets,
         oidc_config_id,
         rosa_allowed_commands,
+        ocm_client_scope_session,
     ):
         LOGGER.info(
             f"Test hypershift cluster install using {hypershift_target_version} OCP version"
@@ -280,6 +285,7 @@ class TestHypershiftCluster:
             aws_compute_machine_type=py_config["aws_compute_machine_type"],
             oidc_config_id=oidc_config_id,
             rosa_allowed_commands=rosa_allowed_commands,
+            ocm_client=ocm_client_scope_session,
         )
 
     @pytest.mark.dependency(

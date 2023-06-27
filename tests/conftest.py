@@ -64,11 +64,13 @@ def ocp_target_version(request):
 
 
 @pytest.fixture(scope="session")
-def rosa_regions(rosa_allowed_commands):
+def rosa_regions(ocm_client_scope_session, rosa_allowed_commands):
     # A region (any region) is required for ROSA commands
     return rosa.cli.execute(
-        command="list regions --region us-west-2",
+        command="list regions",
         allowed_commands=rosa_allowed_commands,
+        aws_region="us-west-2",
+        ocm_client=ocm_client_scope_session,
     )["out"]
 
 

@@ -128,7 +128,7 @@ poetry run pytest -m upgrade --ocp-target-version 4.10.35 --cluster-name {cluste
 --data-collector={path to data collector yaml}
 ```
 
-If running against a production cluster, add: `--tc=api_server:production`
+If running against a production cluster, add: `--tc=ocm_api_server:production`
 
 ### Hypershift cluster installation tests
 
@@ -186,5 +186,5 @@ You can overwrite the api server defined in global_config.py by passing the foll
 For example:
 
 ```bash
-poetry run pytest ... --tc=api_server:stage
+poetry run pytest ... --tc=ocm_api_server:stage
 ```
