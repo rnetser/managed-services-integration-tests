@@ -2568,14 +2568,14 @@ requests = ">=2.0.1,<3.0.0"
 
 [[package]]
 name = "rhoas-sdks"
-version = "1.0.2"
+version = "1.0.5"
 description = "A package which includes RHOAS SDKs"
 category = "main"
 optional = false
 python-versions = ">=3.9,<4.0"
 files = [
-    {file = "rhoas_sdks-1.0.2-py3-none-any.whl", hash = "sha256:1ab015f11441e099c8b12453fe5367b4c324fa7fb8f64c0d33093a791da883b9"},
-    {file = "rhoas_sdks-1.0.2.tar.gz", hash = "sha256:59df247e043d108ce93194bfbc51b423f31f6eca3b772bf8647842b153ec34ee"},
+    {file = "rhoas_sdks-1.0.5-py3-none-any.whl", hash = "sha256:2a9d0e2ad009960bb4825fb974f983ed37a84408a905f6111f0d1604dd0bf2d4"},
+    {file = "rhoas_sdks-1.0.5.tar.gz", hash = "sha256:d77fa311a1666f5f8985f2fad6d724e8b095e65ae840349222d1e7abc47ae0a2"},
 ]
 
 [package.dependencies]
