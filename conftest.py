@@ -25,7 +25,7 @@ def separator(symbol_, val=None):
         return f"{symbol_ * terminal_width}"
 
     sepa = int((terminal_width - len(val) - 2) // 2)
-    return f"{symbol_ * sepa} {val} {symbol_ * sepa}"
+    return f"\n{symbol_ * sepa} {val} {symbol_ * sepa}"
 
 
 # pytest fixtures
