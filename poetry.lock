@@ -793,21 +793,6 @@ docs = ["furo (>=2023.3.27)", "sphinx (>=6.1.3)", "sphinx-autodoc-typehints (>=1
 testing = ["covdefaults (>=2.3)", "coverage (>=7.2.3)", "diff-cover (>=7.5)", "pytest (>=7.3.1)", "pytest-cov (>=4)", "pytest-mock (>=3.10)", "pytest-timeout (>=2.1)"]
 
 [[package]]
-name = "ftfy"
-version = "6.1.1"
-description = "Fixes mojibake and other problems with Unicode, after the fact"
-category = "main"
-optional = false
-python-versions = ">=3.7,<4"
-files = [
-    {file = "ftfy-6.1.1-py3-none-any.whl", hash = "sha256:0ffd33fce16b54cccaec78d6ec73d95ad370e5df5a25255c8966a6147bd667ca"},
-    {file = "ftfy-6.1.1.tar.gz", hash = "sha256:bfc2019f84fcd851419152320a6375604a0f1459c281b5b199b2cd0d2e727f8f"},
-]
-
-[package.dependencies]
-wcwidth = ">=0.2.5"
-
-[[package]]
 name = "google-auth"
 version = "2.19.1"
 description = "Google Authentication Library"
@@ -1259,17 +1244,6 @@ files = [
 ]
 
 [[package]]
-name = "mailchecker"
-version = "5.0.9"
-description = "Cross-language email validation. Backed by a database of thousands throwable email providers."
-category = "main"
-optional = false
-python-versions = "*"
-files = [
-    {file = "mailchecker-5.0.9.tar.gz", hash = "sha256:8b083907da42daa448d93eb19f0c978dde2e8565617a5e76271b35a5f7285ccd"},
-]
-
-[[package]]
 name = "markupsafe"
 version = "2.1.3"
 description = "Safely add untrusted strings to HTML/XML markup."
@@ -1616,18 +1590,6 @@ files = [
 
 [package.dependencies]
 ptyprocess = ">=0.5"
-
-[[package]]
-name = "phonenumbers"
-version = "8.13.13"
-description = "Python version of Google's common library for parsing, formatting, storing and validating international phone numbers."
-category = "main"
-optional = false
-python-versions = "*"
-files = [
-    {file = "phonenumbers-8.13.13-py2.py3-none-any.whl", hash = "sha256:55657adb607484aba6d56270b8a1f9b302f35496076e6c02051d06ed366374d9"},
-    {file = "phonenumbers-8.13.13.tar.gz", hash = "sha256:4bdf8c989aff0cdb105aef170ad2c21f14b4537bcb32cf349f1f710df992a40a"},
-]
 
 [[package]]
 name = "pickleshare"
@@ -2132,28 +2094,25 @@ pyyaml = "*"
 
 [[package]]
 name = "python-benedict"
-version = "0.30.2"
+version = "0.31.0"
 description = "python-benedict is a dict subclass with keylist/keypath/keyattr support, normalized I/O operations (base64, csv, ini, json, pickle, plist, query-string, toml, xls, xml, yaml) and many utilities... for humans, obviously."
 category = "main"
 optional = false
 python-versions = "*"
 files = [
-    {file = "python-benedict-0.30.2.tar.gz", hash = "sha256:c1dff17fcf2066b7b5c0316c9383f398025806a6bd571a18839431e6be1f005d"},
-    {file = "python_benedict-0.30.2-py3-none-any.whl", hash = "sha256:f167df8ba56979c2e1f80d0449fb35627af05665fca1b1b4ec68a5435ef53898"},
+    {file = "python-benedict-0.31.0.tar.gz", hash = "sha256:845a30c9f18141d73402a2d3114dc02de151af0e307c1ae3b528e3b7dbf3f99e"},
+    {file = "python_benedict-0.31.0-py3-none-any.whl", hash = "sha256:c1e45d6dab753d1ac7b990cbf2b85701d8dbb1411528916a9c73c3b3270e82e7"},
 ]
 
 [package.dependencies]
-ftfy = ">=6.0.0,<7.0.0"
-mailchecker = ">=4.1.0,<6.0.0"
-phonenumbers = ">=8.12.0,<9.0.0"
-python-dateutil = ">=2.8.0,<3.0.0"
 python-fsutil = ">=0.9.3,<1.0.0"
 python-slugify = ">=7.0.0,<9.0.0"
 requests = ">=2.26.0,<3.0.0"
 
 [package.extras]
-all = ["python-benedict[io,s3]"]
+all = ["python-benedict[io,parse,s3]"]
 io = ["python-benedict[toml,xls,xml,yaml]"]
+parse = ["ftfy (>=6.0.0,<7.0.0)", "mailchecker (>=4.1.0,<6.0.0)", "phonenumbers (>=8.12.0,<9.0.0)", "python-dateutil (>=2.8.0,<3.0.0)"]
 s3 = ["boto3 (>=1.24.89,<2.0.0)"]
 toml = ["toml (>=0.10.2,<1.0.0)"]
 xls = ["openpyxl (>=3.0.0,<4.0.0)", "xlrd (>=2.0.0,<3.0.0)"]
@@ -2585,18 +2544,19 @@ urllib3 = ">=1.25.3,<2.0.0"
 
 [[package]]
 name = "rosa-python-client"
-version = "1.0.14"
+version = "1.0.15"
 description = "Wrapper for rosa cli"
 category = "main"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "rosa_python_client-1.0.14-py3-none-any.whl", hash = "sha256:f45d708b169c6edad168008be0c53e758229970ae286b8ed92ed19a2c81a5aaa"},
-    {file = "rosa_python_client-1.0.14.tar.gz", hash = "sha256:07b299a5199a42111b42d340b22b303c27c4875143b585bdf96b78d190be49b9"},
+    {file = "rosa_python_client-1.0.15-py3-none-any.whl", hash = "sha256:33c44d18d9e36b0832caacd748bdf0045e5f645698520ca667cf3d69266eda16"},
+    {file = "rosa_python_client-1.0.15.tar.gz", hash = "sha256:18a740421d24b722e8f2939a28f54b2b8e3a53af28a7281d208bf38c4a76a2b0"},
 ]
 
 [package.dependencies]
-python-simple-logger = "*"
+python-benedict = ">=0.31.0,<0.32.0"
+python-simple-logger = ">=1.0.5,<2.0.0"
 redhat-qe-cloud-tools = ">=1.0.6,<2.0.0"
 
 [[package]]
@@ -2839,7 +2799,7 @@ test = ["covdefaults (>=2.3)", "coverage (>=7.2.3)", "coverage-enable-subprocess
 name = "wcwidth"
 version = "0.2.6"
 description = "Measures the displayed width of unicode strings in a terminal"
-category = "main"
+category = "dev"
 optional = false
 python-versions = "*"
 files = [
