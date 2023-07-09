@@ -63,11 +63,11 @@ def create_hypershift_cluster(
     ocm_client,
 ):
     rosa_create_cluster_cmd = (
-        f"create cluster --cluster-name {cluster_parameters['cluster_name']} "
-        f"--subnet-ids {cluster_subnets} --sts --hosted-cp --machine-cidr 10.0.0.0/16 "
-        f"--compute-machine-type {aws_compute_machine_type} --replicas {py_config['rosa_number_of_nodes']} "
-        f"--tags dns:external --channel-group {openshift_channel_group} "
-        f"--version {ocp_target_version} --oidc-config-id {oidc_config_id}"
+        f"create cluster --cluster-name={cluster_parameters['cluster_name']} "
+        f"--subnet-ids={cluster_subnets} --sts --hosted-cp --machine-cidr=10.0.0.0/16 "
+        f"--compute-machine-type={aws_compute_machine_type} --replicas={py_config['rosa_number_of_nodes']} "
+        f"--tags=dns:external --channel-group={openshift_channel_group} "
+        f"--version={ocp_target_version} --oidc-config-id={oidc_config_id}"
     )
     rosa.cli.execute(
         command=rosa_create_cluster_cmd,
@@ -205,14 +205,14 @@ def oidc_config_id(
     oidc_prefix = cluster_parameters["cluster_name"]
     LOGGER.info("Create oidc-config")
     rosa.cli.execute(
-        command=f"create oidc-config --managed=false --prefix {oidc_prefix}",
+        command=f"create oidc-config --managed=false --prefix={oidc_prefix}",
         allowed_commands=rosa_allowed_commands,
         aws_region=aws_region,
         ocm_client=ocm_client_scope_session,
     )
     # `rosa list oidc-config` command does not have `region` as part of the help menu
     res = rosa.cli.execute(
-        command=f"list oidc-config --region {aws_region}",
+        command=f"list oidc-config --region={aws_region}",
         allowed_commands=rosa_allowed_commands,
         ocm_client=ocm_client_scope_session,
         aws_region=aws_region,
@@ -225,7 +225,7 @@ def oidc_config_id(
     yield _oidc_config_id
     LOGGER.info("Delete oidc-config")
     rosa.cli.execute(
-        command=f"delete oidc-config --oidc-config-id {_oidc_config_id}",
+        command=f"delete oidc-config --oidc-config-id={_oidc_config_id}",
         allowed_commands=rosa_allowed_commands,
         aws_region=aws_region,
         ocm_client=ocm_client_scope_session,
@@ -242,7 +242,7 @@ def hypershift_target_version(
         return ocp_target_version
 
     rosa_versions = rosa.cli.execute(
-        command=f"list versions --channel-group {py_config['openshift_channel_group']}",
+        command=f"list versions --channel-group={py_config['openshift_channel_group']}",
         allowed_commands=rosa_allowed_commands,
         aws_region=aws_region,
         ocm_client=ocm_client_scope_session,
