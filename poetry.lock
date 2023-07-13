@@ -2425,13 +2425,13 @@ urllib3 = ">=1.25.3,<2.0.0"
 
 [[package]]
 name = "rosa-python-client"
-version = "1.0.19"
+version = "1.0.20"
 description = "Wrapper for rosa cli"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "rosa_python_client-1.0.19-py3-none-any.whl", hash = "sha256:8a71ec2ff1f78e8befe3a285217e12e76d8fb2c3d8c30f0d4436651b74b806ca"},
-    {file = "rosa_python_client-1.0.19.tar.gz", hash = "sha256:8af9d77fb1cf8a51a12a947f866055b309ada7fee0e59093ba9c62230ea54297"},
+    {file = "rosa_python_client-1.0.20-py3-none-any.whl", hash = "sha256:2a99c9598e90dcd0b2a9e20867637c607e41fb4d6e18b261fac14f4741248e95"},
+    {file = "rosa_python_client-1.0.20.tar.gz", hash = "sha256:2079720addb6d22f55a5de61ec404511f25411ba0513f11fde96cae5a1f43d9f"},
 ]
 
 [package.dependencies]
