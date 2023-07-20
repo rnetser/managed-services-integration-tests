@@ -54,8 +54,8 @@ poetry update openshift-python-wrapper
 
 ### Prepare a cluster
 
-This project runs tests against an OCP cluster running on OSD / ROSA.
-To get the cluster's kubeconfig run:
+This project runs tests against one or more OCP clusters.
+To get the OCM / ROSA / Hypershift cluster's kubeconfig run:
 
 ```bash
 ocm get clusters -p search="name like '"$CLUSTER_NAME"%'" | jq -r  '.items | .[] | .id' \
@@ -67,6 +67,20 @@ Save the output to a file and export it as `KUBECONFIG`
 ```bash
 export KUBECONFIG=<path to kubeconfig file>
 ```
+
+Use a specific file path, pass
+
+```bash
+poetry run pytest ... --kubeconfig_file_paths="<path to kubeconfig1>"
+```
+
+To run against multiple clusters, pass
+
+```bash
+poetry run pytest ... --kubeconfig_file_paths="<path to kubeconfig1>,<path to kubeconfig2>"
+```
+
+Note: explicit usage of values should be implemented according to the relevant test requirements
 
 ## Logging
 

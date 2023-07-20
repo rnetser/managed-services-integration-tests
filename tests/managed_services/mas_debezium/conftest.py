@@ -238,9 +238,9 @@ def kafka_record(kafka_instance_client, first_kafka_topic_name):
 
 
 @pytest.fixture(scope="class")
-def debezium_namespace(admin_client):
+def debezium_namespace(admin_client_scope_session):
     with cluster_resource(Namespace)(
-        client=admin_client, name="mas-debezium"
+        client=admin_client_scope_session, name="mas-debezium"
     ) as dbz_ns:
         dbz_ns.wait_for_status(
             status=Namespace.Status.ACTIVE, timeout=WAIT_STATUS_TIMEOUT
@@ -250,11 +250,11 @@ def debezium_namespace(admin_client):
 
 @pytest.fixture(scope="class")
 def consumer_pod(
-    admin_client,
+    admin_client_scope_session,
     debezium_namespace,
 ):
     with cluster_resource(ConsumerPod)(
-        client=admin_client,
+        client=admin_client_scope_session,
         name="kafka-consumer-pod",
         namespace=debezium_namespace.name,
         consumer_image="edenhill/kcat:1.7.1",

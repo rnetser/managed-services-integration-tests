@@ -18,7 +18,7 @@ class RosaCommandError(Exception):
 
 
 @pytest.fixture(scope="session")
-def admin_client():
+def admin_client_scope_session():
     """
     Get DynamicClient
     """
@@ -26,8 +26,8 @@ def admin_client():
 
 
 @pytest.fixture(scope="session")
-def nodes(admin_client):
-    yield list(Node.get(dyn_client=admin_client))
+def nodes_scope_session(admin_client_scope_session):
+    yield list(Node.get(dyn_client=admin_client_scope_session))
 
 
 @pytest.fixture(scope="session")

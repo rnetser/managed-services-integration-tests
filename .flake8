@@ -28,6 +28,7 @@ fcn_exclude_functions =
     mktemp,
     shlex,
     contextlib,
+    metafunc,
 
 enable-extensions =
     FCN,
