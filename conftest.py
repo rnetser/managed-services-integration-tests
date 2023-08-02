@@ -2,7 +2,6 @@ import os
 import shutil
 
 import pytest
-import yaml
 from ocp_resources.node import Node
 from ocp_resources.pod import Pod
 from ocp_utilities.infra import get_client
@@ -11,6 +10,7 @@ from ocp_wrapper_data_collector.data_collector import (
     collect_resources_yaml_instance,
     prepare_pytest_item_data_dir,
 )
+from pyaml_env import parse_config
 from pytest_testconfig import config as py_config
 from simple_logger.logger import get_logger
 
@@ -73,12 +73,11 @@ def pytest_generate_tests(metafunc):
 def pytest_sessionstart(session):
     data_collector = session.config.getoption("--data-collector")
     if data_collector:
-        with open(data_collector, "r") as fd:
-            py_config["data_collector"] = yaml.safe_load(fd.read())
-            shutil.rmtree(
-                py_config["data_collector"]["data_collector_base_directory"],
-                ignore_errors=True,
-            )
+        py_config["data_collector"] = parse_config(path=data_collector)
+        shutil.rmtree(
+            py_config["data_collector"]["data_collector_base_directory"],
+            ignore_errors=True,
+        )
 
     tests_log_file = session.config.getoption("pytest_log_file")
     if os.path.exists(tests_log_file):

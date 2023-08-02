@@ -33,6 +33,7 @@ boto3 = "^1.28.1"
 rosa-python-client = "^1.0.16"
 python-simple-logger = "^1.0.5"
 packaging = "^23.1"
+pyaml-env = "^1.2.1"
 
 [tool.poetry.dev-dependencies]
 ipdb = "*"
