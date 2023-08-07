@@ -10,7 +10,7 @@ urllib3.disable_warnings()
 
 
 def all_python_files():
-    exclude_dirs = [".tox", "venv", ".pytest_cache"]
+    exclude_dirs = [".tox", "venv", ".pytest_cache", "site-packages"]
     for root, _, files in os.walk(os.path.abspath(os.curdir)):
         if [_dir for _dir in exclude_dirs if _dir in root]:
             continue
