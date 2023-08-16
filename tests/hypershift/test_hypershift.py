@@ -55,18 +55,22 @@ def aws_region(rosa_hypershift_regions):
 
 
 @pytest.fixture(scope="class")
-def cluster_name():
+def cluster_name_scope_class():
     return f"msi-{shortuuid.random(11)}".lower()
 
 
 @pytest.fixture(scope="class")
 def cluster_cmd(
-    ocm_token, ocm_client_scope_session, aws_region, ocp_target_version, cluster_name
+    ocm_token,
+    ocm_client_scope_session,
+    aws_region,
+    ocp_target_version,
+    cluster_name_scope_class,
 ):
     return (
         f"--clusters-install-data-directory /tmp/clusters-data "
         f"--ocm-token={ocm_token} "
-        f"--cluster 'name={cluster_name};"
+        f"--cluster 'name={cluster_name_scope_class};"
         "platform=hypershift;"
         f"region={aws_region};"
         f"version={ocp_target_version};"
@@ -97,8 +101,8 @@ def click_runner():
 
 
 @pytest.fixture(scope="class")
-def cluster_scope_class(ocm_client_scope_session, cluster_name):
-    return Cluster(client=ocm_client_scope_session, name=cluster_name)
+def cluster_scope_class(ocm_client_scope_session, cluster_name_scope_class):
+    return Cluster(client=ocm_client_scope_session, name=cluster_name_scope_class)
 
 
 class TestHypershiftCluster:

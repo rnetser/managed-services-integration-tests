@@ -31,15 +31,15 @@ def nodes_scope_session(admin_client_scope_session):
 
 
 @pytest.fixture(scope="session")
-def cluster_name(request):
+def cluster_name_scope_session(request):
     cluster_name = request.session.config.getoption(name="--cluster-name")
     assert cluster_name, "Cluster name is missing from cmdline"
     return cluster_name
 
 
 @pytest.fixture(scope="session")
-def cluster(ocm_client_scope_session, cluster_name):
-    return Cluster(client=ocm_client_scope_session, name=cluster_name)
+def cluster(ocm_client_scope_session, cluster_name_scope_session):
+    return Cluster(client=ocm_client_scope_session, name=cluster_name_scope_session)
 
 
 @pytest.fixture(scope="session")
