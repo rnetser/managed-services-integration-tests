@@ -1,18 +1,11 @@
-import os
-import re
-import shutil
-
 import boto3
+import openshift_cli_installer.cli
 import pytest
-import rosa.cli
 import shortuuid
+from click.testing import CliRunner
 from ocm_python_wrapper.cluster import Cluster
-from ocm_python_wrapper.exceptions import MissingResourceError
-from ocp_resources.utils import TimeoutExpiredError, TimeoutSampler
 from ocp_utilities.operators import install_operator, uninstall_operator
-from packaging import version
 from pytest_testconfig import py_config
-from python_terraform import IsNotFlagged, Terraform, TerraformCommandError
 from simple_logger.logger import get_logger
 
 
@@ -24,57 +17,6 @@ pytestmark = pytest.mark.hypershift_install
 
 class RegionNotFoundError(Exception):
     pass
-
-
-def create_vpcs(terraform):
-    LOGGER.info("Create VPCs")
-    try:
-        terraform.plan(dir_or_plan="rosa.plan")
-        terraform.apply(capture_output=False, skip_plan=True, raise_on_error=True)
-    except TerraformCommandError as ex:
-        LOGGER.error(f"Failed to apply Terraform plan, {ex}")
-        # Clean up already created resources from the plan
-        destroy_vpcs(terraform=terraform)
-        raise
-
-
-def destroy_vpcs(terraform):
-    try:
-        LOGGER.info("Destroy VPCs")
-        terraform.destroy(
-            force=IsNotFlagged,
-            auto_approve=True,
-            capture_output=False,
-            raise_on_error=True,
-        )
-    except TerraformCommandError as ex:
-        LOGGER.error(f"Failed to destroy VPCs, {ex}")
-        raise
-
-
-def create_hypershift_cluster(
-    cluster_parameters,
-    ocp_target_version,
-    cluster_subnets,
-    openshift_channel_group,
-    aws_compute_machine_type,
-    oidc_config_id,
-    rosa_allowed_commands,
-    ocm_client,
-):
-    rosa_create_cluster_cmd = (
-        f"create cluster --cluster-name={cluster_parameters['cluster_name']} "
-        f"--subnet-ids={cluster_subnets} --sts --hosted-cp --machine-cidr=10.0.0.0/16 "
-        f"--compute-machine-type={aws_compute_machine_type} --replicas={py_config['rosa_number_of_nodes']} "
-        f"--tags=dns:external --channel-group={openshift_channel_group} "
-        f"--version={ocp_target_version} --oidc-config-id={oidc_config_id}"
-    )
-    rosa.cli.execute(
-        command=rosa_create_cluster_cmd,
-        allowed_commands=rosa_allowed_commands,
-        aws_region=cluster_parameters["aws_region"],
-        ocm_client=ocm_client,
-    )
 
 
 @pytest.fixture(scope="session")
@@ -113,190 +55,67 @@ def aws_region(rosa_hypershift_regions):
 
 
 @pytest.fixture(scope="class")
-def az_ids(aws_region):
-    # az_id example: us-east-2 -> ["use2-az1", "use2-az2"]
-    az_id_prefix = "".join(re.match(r"(.*)-(\w).*-(\d)", aws_region).groups())
-    return [f"{az_id_prefix}-az1", f"{az_id_prefix}-az2"]
+def cluster_name():
+    return f"msi-{shortuuid.random(11)}".lower()
 
 
 @pytest.fixture(scope="class")
-def cluster_parameters(aws_region, az_ids):
-    params = {
-        "aws_region": aws_region,
-        "az_ids": az_ids,
-        "cluster_name": f"msi-{shortuuid.random(11)}".lower(),
-    }
-    LOGGER.info(f"Cluster parameters: {params}")
-    return params
-
-
-@pytest.fixture(scope="class")
-def terraform_workdir(tmp_path_factory):
-    tmp_dir = tmp_path_factory.mktemp("terraform_working_dir")
-    LOGGER.info(f"Terraform work dir: {tmp_dir}")
-    yield tmp_dir
-
-
-@pytest.fixture(scope="class")
-def copied_terraform_vpcs_config_file(terraform_workdir):
-    shutil.copy(
-        f"{os.path.dirname(__file__)}/manifests/setup-vpc.tf", terraform_workdir
-    )
-
-
-@pytest.fixture(scope="class")
-def terraform(terraform_workdir, copied_terraform_vpcs_config_file, cluster_parameters):
-    tf = Terraform(working_dir=terraform_workdir, variables=cluster_parameters)
-    tf.init()
-    return tf
-
-
-@pytest.fixture(scope="class")
-def vpcs(terraform):
-    create_vpcs(terraform=terraform)
-    yield
-    destroy_vpcs(terraform=terraform)
-
-
-@pytest.fixture(scope="class")
-def cluster_subnets(vpcs, terraform):
-    """Returns cluster subnets str (public subnet, private subnet). Order is required by ROSA CLI"""
-    terraform_output = terraform.output()
-    try:
-        private_subnet = terraform_output["cluster-private-subnet"]["value"]
-        public_subnet = terraform_output["cluster-public-subnet"]["value"]
-        LOGGER.info(
-            f"Cluster public subnet: {public_subnet}, private subnet: {private_subnet}"
-        )
-        return f'"{public_subnet},{private_subnet}"'
-    except KeyError:
-        LOGGER.error(
-            f"Failed to get cluster subnets, terraform output: {terraform_output}"
-        )
-        raise
-
-
-@pytest.fixture(scope="class")
-def cluster_scope_class(ocm_client_scope_session, cluster_parameters):
-    cluster_name = cluster_parameters["cluster_name"]
-    try:
-        for sample in TimeoutSampler(
-            wait_timeout=120,
-            sleep=5,
-            func=Cluster,
-            client=ocm_client_scope_session,
-            name=cluster_name,
-            exceptions_dict={MissingResourceError: []},
-        ):
-            if sample:
-                return sample
-    except TimeoutExpiredError:
-        LOGGER.error(f"Cluster {cluster_name} not found.")
-        raise
-
-
-@pytest.fixture(scope="class")
-def oidc_config_id(
-    cluster_parameters,
-    aws_region,
-    rosa_allowed_commands,
-    ocm_client_scope_session,
+def cluster_cmd(
+    ocm_token, ocm_client_scope_session, aws_region, ocp_target_version, cluster_name
 ):
-    oidc_prefix = cluster_parameters["cluster_name"]
-    LOGGER.info("Create oidc-config")
-    rosa.cli.execute(
-        command=f"create oidc-config --managed=false --prefix={oidc_prefix}",
-        allowed_commands=rosa_allowed_commands,
-        aws_region=aws_region,
-        ocm_client=ocm_client_scope_session,
-    )
-    # `rosa list oidc-config` command does not have `region` as part of the help menu
-    res = rosa.cli.execute(
-        command=f"list oidc-config --region={aws_region}",
-        allowed_commands=rosa_allowed_commands,
-        ocm_client=ocm_client_scope_session,
-        aws_region=aws_region,
-    )["out"]
-    _oidc_config_id = [
-        oidc_config["id"]
-        for oidc_config in res
-        if oidc_prefix in oidc_config["secret_arn"]
-    ][0]
-    yield _oidc_config_id
-    LOGGER.info("Delete oidc-config")
-    rosa.cli.execute(
-        command=f"delete oidc-config --oidc-config-id={_oidc_config_id}",
-        allowed_commands=rosa_allowed_commands,
-        aws_region=aws_region,
-        ocm_client=ocm_client_scope_session,
+    return (
+        f"--clusters-install-data-directory /tmp/clusters-data "
+        f"--ocm-token={ocm_token} "
+        f"--cluster 'name={cluster_name};"
+        "platform=hypershift;"
+        f"region={aws_region};"
+        f"version={ocp_target_version};"
+        f"compute-machine-type={py_config['aws_compute_machine_type']};"
+        f"replicas={py_config['rosa_number_of_nodes']};"
+        f"channel-group={py_config['openshift_channel_group']};"
+        "expiration-time=4h;"
+        "timeout=1h' "
+        f"--ocm-env={py_config['ocm_api_server']} "
+        "--s3-bucket-name=openshift-cli-installer "
+        "--s3-bucket-path=msi-tests"
     )
 
 
-@pytest.fixture(scope="session")
-def hypershift_target_version(
-    ocp_target_version, rosa_allowed_commands, ocm_client_scope_session, aws_region
-):
-    """Return ocp_target_version if semantic version else return ROSA latest version based on ocp_target_version"""
-    # Z-stream or explicit RC
-    if len(version.parse(ocp_target_version).release) == 3:
-        return ocp_target_version
-
-    rosa_versions = rosa.cli.execute(
-        command=f"list versions --channel-group={py_config['openshift_channel_group']}",
-        allowed_commands=rosa_allowed_commands,
-        aws_region=aws_region,
-        ocm_client=ocm_client_scope_session,
-    )["out"]
-    # Excluding "ec" releases
-    target_version = max(
-        [
-            version.parse(ver["raw_id"])
-            for ver in rosa_versions
-            if ver["raw_id"].startswith(ocp_target_version)
-            and "ec" not in ver["raw_id"]
-        ]
-    ).public
-    # version removes the 'rc' hyphen and period from the version, example: '4.13.0rc7' -> '4.13.0-rc.7'
-    return target_version.replace("rc", "-rc.")
+@pytest.fixture(scope="class")
+def create_cluster_cmd(cluster_cmd):
+    return f"--action create {cluster_cmd}"
 
 
-@pytest.mark.usefixtures("vpcs")
+@pytest.fixture(scope="class")
+def destroy_cluster_cmd(cluster_cmd):
+    return f"--action destroy {cluster_cmd}"
+
+
+@pytest.fixture(scope="class")
+def click_runner():
+    return CliRunner()
+
+
+@pytest.fixture(scope="class")
+def cluster_scope_class(ocm_client_scope_session, cluster_name):
+    return Cluster(client=ocm_client_scope_session, name=cluster_name)
+
+
 class TestHypershiftCluster:
     OPERATOR_NAME = "servicemeshoperator"
 
     @pytest.mark.dependency(name="test_hypershift_cluster_installation")
-    def test_hypershift_cluster_installation(
-        self,
-        cluster_parameters,
-        hypershift_target_version,
-        cluster_subnets,
-        oidc_config_id,
-        rosa_allowed_commands,
-        ocm_client_scope_session,
-    ):
-        LOGGER.info(
-            f"Test hypershift cluster install using {hypershift_target_version} OCP version"
+    def test_hypershift_cluster_installation(self, create_cluster_cmd, click_runner):
+        result = click_runner.invoke(
+            cli=openshift_cli_installer.cli.main,
+            args=create_cluster_cmd,
+            catch_exceptions=False,
         )
-        create_hypershift_cluster(
-            cluster_parameters=cluster_parameters,
-            ocp_target_version=hypershift_target_version,
-            cluster_subnets=cluster_subnets,
-            openshift_channel_group=py_config["openshift_channel_group"],
-            aws_compute_machine_type=py_config["aws_compute_machine_type"],
-            oidc_config_id=oidc_config_id,
-            rosa_allowed_commands=rosa_allowed_commands,
-            ocm_client=ocm_client_scope_session,
-        )
+        if result.exit_code != 0:
+            pytest.fail(f"Failed to create cluster on {result.output}")
 
     @pytest.mark.dependency(
-        name="test_hypershift_cluster_ready",
-        depends=["test_hypershift_cluster_installation"],
-    )
-    def test_hypershift_cluster_ready(self, cluster_scope_class):
-        cluster_scope_class.wait_for_cluster_ready()
-
-    @pytest.mark.dependency(
-        name="test_install_operator", depends=["test_hypershift_cluster_ready"]
+        name="test_install_operator", depends=["test_hypershift_cluster_installation"]
     )
     def test_install_operator(self, cluster_scope_class):
         install_operator(
@@ -314,5 +133,11 @@ class TestHypershiftCluster:
         )
 
     @pytest.mark.dependency(depends=["test_hypershift_cluster_installation"])
-    def test_hypershift_cluster_uninstall(self, cluster_scope_class):
-        cluster_scope_class.delete()
+    def test_hypershift_cluster_uninstall(self, destroy_cluster_cmd, click_runner):
+        result = click_runner.invoke(
+            cli=openshift_cli_installer.cli.main,
+            args=destroy_cluster_cmd,
+            catch_exceptions=False,
+        )
+        if result.exit_code != 0:
+            pytest.fail(f"Failed to create cluster on {result.output}")
