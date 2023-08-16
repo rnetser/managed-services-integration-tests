@@ -109,7 +109,7 @@ class TestHypershiftCluster:
     OPERATOR_NAME = "servicemeshoperator"
 
     @pytest.mark.dependency(name="test_hypershift_cluster_installation")
-    def test_hypershift_cluster_installation(self, create_cluster_cmd, click_runner):
+    def test_hypershift_create_cluster(self, create_cluster_cmd, click_runner):
         result = click_runner.invoke(
             cli=openshift_cli_installer.cli.main,
             args=create_cluster_cmd,
@@ -137,11 +137,11 @@ class TestHypershiftCluster:
         )
 
     @pytest.mark.dependency(depends=["test_hypershift_cluster_installation"])
-    def test_hypershift_cluster_uninstall(self, destroy_cluster_cmd, click_runner):
+    def test_hypershift_destroy_cluster(self, destroy_cluster_cmd, click_runner):
         result = click_runner.invoke(
             cli=openshift_cli_installer.cli.main,
             args=destroy_cluster_cmd,
             catch_exceptions=False,
         )
         if result.exit_code != 0:
-            pytest.fail(f"Failed to create cluster on {result.output}")
+            pytest.fail(f"Failed to destroy cluster. error: {result.output}")
