@@ -127,4 +127,3 @@ docs/source/rst
 # Terraform files
 .terraform.*
 terraform.*
-tests/hypershift/.terraform/
