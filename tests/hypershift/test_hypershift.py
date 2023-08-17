@@ -97,7 +97,7 @@ def destroy_cluster_cmd(cluster_cmd):
 
 @pytest.fixture(scope="class")
 def click_runner():
-    return CliRunner()
+    return CliRunner(mix_stderr=False)
 
 
 @pytest.fixture(scope="class")
@@ -115,8 +115,10 @@ class TestHypershiftCluster:
             args=create_cluster_cmd,
             catch_exceptions=False,
         )
+        LOGGER.info(result.stdout)
+
         if result.exit_code != 0:
-            pytest.fail(f"Failed to create cluster on {result.output}")
+            pytest.fail(f"Failed to create cluster on {result.stderr}")
 
     @pytest.mark.dependency(
         name="test_install_operator", depends=["test_hypershift_cluster_installation"]
@@ -143,5 +145,7 @@ class TestHypershiftCluster:
             args=destroy_cluster_cmd,
             catch_exceptions=False,
         )
+        LOGGER.info(result.stdout)
+
         if result.exit_code != 0:
-            pytest.fail(f"Failed to destroy cluster. error: {result.output}")
+            pytest.fail(f"Failed to destroy cluster. error: {result.stderr}")
