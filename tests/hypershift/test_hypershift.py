@@ -106,7 +106,8 @@ def cluster_scope_class(ocm_client_scope_session, cluster_name_scope_class):
 
 
 class TestHypershiftCluster:
-    OPERATOR_NAME = "servicemeshoperator"
+    OPERATOR_NAME = "serverless-operator"
+    OPERATOR_NAMESPACE = "openshift-serverless"
 
     @pytest.mark.dependency(name="test_hypershift_cluster_installation")
     def test_hypershift_create_cluster(self, create_cluster_cmd, click_runner):
@@ -127,6 +128,7 @@ class TestHypershiftCluster:
         install_operator(
             admin_client=cluster_scope_class.ocp_client,
             name=TestHypershiftCluster.OPERATOR_NAME,
+            operator_namespace=TestHypershiftCluster.OPERATOR_NAMESPACE,
             channel="stable",
             source="redhat-operators",
         )
@@ -136,6 +138,7 @@ class TestHypershiftCluster:
         uninstall_operator(
             admin_client=cluster_scope_class.ocp_client,
             name=TestHypershiftCluster.OPERATOR_NAME,
+            operator_namespace=TestHypershiftCluster.OPERATOR_NAMESPACE,
         )
 
     @pytest.mark.dependency(depends=["test_hypershift_cluster_installation"])
