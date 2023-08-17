@@ -1,3 +1,4 @@
+import logging
 import os
 import shutil
 
@@ -16,7 +17,7 @@ from simple_logger.logger import get_logger
 
 
 LOGGER = get_logger(name=__name__)
-BASIC_LOGGER = get_logger(name="basic")
+BASIC_LOGGER = logging.getLogger("basic")
 
 
 def separator(symbol_, val=None):
