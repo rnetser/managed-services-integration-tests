@@ -22,12 +22,15 @@ LOGGER = get_logger(name=__name__)
 def cluster_sanity(
     nodes,
     pods,
-    junitxml_property,
+    junitxml_property=None,
+    exit_pytest=True,
 ):
     """
     Args:
         nodes (list): list of Node resources
         pods (list): list of Pod resources
+        junitxml_property (pytest plugin): record_testsuite_property
+        exit_pytest (bool): Exit pytest execution on failure if True else raise relevant exception
 
     Raises:
         NodeNotReadyError or NodeUnschedulableError or PodsFailedOrPendingError or
@@ -48,11 +51,14 @@ def cluster_sanity(
         PodsFailedOrPendingError,
         NodesNotHealthyConditionError,
     ) as ex:
-        exit_pytest_execution(
-            filename=exceptions_filename,
-            message=ex.args[0],
-            junitxml_property=junitxml_property,
-        )
+        if exit_pytest:
+            exit_pytest_execution(
+                filename=exceptions_filename,
+                message=ex.args[0],
+                junitxml_property=junitxml_property,
+            )
+
+        raise ex
 
 
 def get_ocm_client(token):

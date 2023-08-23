@@ -18,7 +18,6 @@ DEFAULT_NUM_ITEMS = "50"
 DEFAULT_ORDER_BY_STR = "name asc"
 
 
-@pytest.mark.smoke
 @pytest.mark.skip_data_collector
 def test_list_kafka_instances(kafka_mgmt_api_instance):
     try:

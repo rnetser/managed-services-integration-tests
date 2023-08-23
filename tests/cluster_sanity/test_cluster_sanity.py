@@ -42,10 +42,11 @@ def test_cluster_sanity(nodes_scope_session, pods_scope_session, junitxml_plugin
 
 @pytest.mark.smoke_multi
 def test_multi_clusters_sanity(
-    nodes_scope_function, pods_scope_function, junitxml_plugin
+    nodes_scope_function,
+    pods_scope_function,
 ):
     cluster_sanity(
         nodes=nodes_scope_function,
         pods=pods_scope_function,
-        junitxml_property=junitxml_plugin,
+        exit_pytest=False,
     )
