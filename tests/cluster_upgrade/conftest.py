@@ -16,9 +16,10 @@ def target_version_in_available_upgrades(cluster, ocp_target_version):
 
 @pytest.fixture(scope="session")
 def verified_no_existing_upgrade_policies(cluster):
-    assert (
-        not cluster.upgrade_policies
-    ), f"Cluster {cluster.name} has existing upgrade policies {cluster.upgrade_policies}"
+    assert not cluster.upgrade_policies, (
+        f"Cluster {cluster.name} has existing upgrade policies"
+        f" {cluster.upgrade_policies}"
+    )
 
 
 @pytest.fixture(scope="session")
@@ -44,4 +45,7 @@ def upgradable_cloud_credentials_operator(cluster):
     ][0]
     assert ast.literal_eval(
         cloud_credentials_operator_upgradeable_condition["status"]
-    ), f"{cloud_credential_name} operator is not upgradable: {cloud_credentials_operator_upgradeable_condition}"
+    ), (
+        f"{cloud_credential_name} operator is not upgradable:"
+        f" {cloud_credentials_operator_upgradeable_condition}"
+    )

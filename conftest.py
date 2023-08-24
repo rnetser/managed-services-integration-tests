@@ -39,7 +39,10 @@ def pytest_addoption(parser):
     # Data collector group
     data_collector_group.addoption(
         "--data-collector",
-        help="pass YAML file path to enable data collector to capture additional logs and resources",
+        help=(
+            "pass YAML file path to enable data collector to capture additional logs"
+            " and resources"
+        ),
     )
     data_collector_group.addoption(
         "--pytest-log-file",
@@ -182,10 +185,12 @@ def set_up_pytest_runtest_phase(item, phase):
     if item.session.config.getoption(
         "--data-collector"
     ) and not item.get_closest_marker(name="skip_data_collector"):
-        py_config["data_collector"][
-            "collector_directory"
-        ] = prepare_pytest_item_data_dir(
-            item=item,
-            base_directory=py_config["data_collector"]["data_collector_base_directory"],
-            subdirectory_name=phase.lower(),
+        py_config["data_collector"]["collector_directory"] = (
+            prepare_pytest_item_data_dir(
+                item=item,
+                base_directory=py_config["data_collector"][
+                    "data_collector_base_directory"
+                ],
+                subdirectory_name=phase.lower(),
+            )
         )

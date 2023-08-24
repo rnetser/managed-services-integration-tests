@@ -38,7 +38,8 @@ def aws_region(rosa_hypershift_regions):
         if pyconfig_aws_region in rosa_hypershift_regions:
             return pyconfig_aws_region
         raise ValueError(
-            f"{pyconfig_aws_region} is not supported, supported regions: {rosa_hypershift_regions}"
+            f"{pyconfig_aws_region} is not supported, supported regions:"
+            f" {rosa_hypershift_regions}"
         )
     # If a region was not passed, use a hypershift-enabled region with the lowest number of used VPCs
     region, vpcs = None, None
@@ -68,7 +69,7 @@ def cluster_cmd(
     cluster_name_scope_class,
 ):
     return (
-        f"--clusters-install-data-directory /tmp/clusters-data "
+        "--clusters-install-data-directory /tmp/clusters-data "
         f"--ocm-token={ocm_token} "
         f"--cluster 'name={cluster_name_scope_class};"
         "platform=hypershift;"

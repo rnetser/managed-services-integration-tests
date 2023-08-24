@@ -39,7 +39,8 @@ class NoAvailableKafkaRegionsError(Exception):
 def kafka_supported_region(kafka_mgmt_api_instance, rosa_regions):
     cloud_provider = py_config["cloud_provider"]
     LOGGER.info(
-        f"Searching for an available kafka cloud region under {cloud_provider} cloud provider"
+        f"Searching for an available kafka cloud region under {cloud_provider} cloud"
+        " provider"
     )
     for region_dict in rosa_regions:
         region_id = region_dict["id"]
@@ -113,7 +114,7 @@ def kafka_instance_ready(kafka_mgmt_api_instance, kafka_instance):
             if kafka_sample.status == "ready":
                 return kafka_sample
     except TimeoutExpiredError:
-        LOGGER.error("Timeout expired. Current kafka snapshot:\n" f"{kafka_sample}")
+        LOGGER.error(f"Timeout expired. Current kafka snapshot:\n{kafka_sample}")
         raise
 
 
@@ -136,7 +137,8 @@ def kafka_instance_sa(
 ):
     kafka_sa_name = f"{kafka_instance.name}-sa"
     LOGGER.info(
-        f"Creating {kafka_sa_name} service-account for {kafka_instance.name} kafka instance"
+        f"Creating {kafka_sa_name} service-account for {kafka_instance.name} kafka"
+        " instance"
     )
     service_account_create_request_data = ServiceAccountCreateRequestData(
         name=kafka_sa_name,
@@ -176,7 +178,8 @@ def kafka_instance_sa(
 @pytest.fixture(scope="class")
 def kafka_sa_acl_binding(kafka_instance_client, kafka_instance, kafka_instance_sa):
     LOGGER.info(
-        f"Binding acls for {kafka_instance_sa.name} service-account with {kafka_instance.name} kafka instance"
+        f"Binding acls for {kafka_instance_sa.name} service-account with"
+        f" {kafka_instance.name} kafka instance"
     )
     # Binding the service-account instance to kafka with privileges
     # via AclBinding instance
