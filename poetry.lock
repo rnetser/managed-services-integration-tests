@@ -868,12 +868,12 @@ six = "*"
 
 [[package]]
 name = "openshift-cli-installer"
-version = "1.0.19"
+version = "1.0.20"
 description = "CLI to install/uninstall Openshift clusters."
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "openshift_cli_installer-1.0.19.tar.gz", hash = "sha256:2b84cc28c4d78079a032ba7570895cc6acd62c1a6299ca07d3d3014ed201d376"},
+    {file = "openshift_cli_installer-1.0.20.tar.gz", hash = "sha256:8c3a632bc77bb2a40791ffc0fdaee4152c2e0112dd4bfe1a8299be9726fbdc3d"},
 ]
 
 [package.dependencies]
@@ -882,6 +882,7 @@ jinja2 = ">=3.1.2,<4.0.0"
 openshift-cluster-management-python-wrapper = ">=1.0.27,<2.0.0"
 openshift-python-utilities = ">=4.14.7,<5.0.0"
 openshift-python-wrapper = ">=4.14.1,<5.0.0"
+pyaml-env = ">=1.2.1,<2.0.0"
 pytest = ">=7.4.0,<8.0.0"
 python-terraform = ">=0.10.1,<0.11.0"
 redhat-qe-cloud-tools = ">=1.0.9,<2.0.0"
