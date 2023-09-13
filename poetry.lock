@@ -868,12 +868,12 @@ six = "*"
 
 [[package]]
 name = "openshift-cli-installer"
-version = "1.0.20"
+version = "1.0.21"
 description = "CLI to install/uninstall Openshift clusters."
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "openshift_cli_installer-1.0.20.tar.gz", hash = "sha256:8c3a632bc77bb2a40791ffc0fdaee4152c2e0112dd4bfe1a8299be9726fbdc3d"},
+    {file = "openshift_cli_installer-1.0.21.tar.gz", hash = "sha256:d0e3b0df1971df8ff3c30f11eaadae7919f64d25f90bd968806b5b5baa9dbaf2"},
 ]
 
 [package.dependencies]
