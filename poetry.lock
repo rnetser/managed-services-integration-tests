@@ -995,12 +995,12 @@ signedtoken = ["cryptography (>=3.0.0)", "pyjwt (>=2.0.0,<3)"]
 
 [[package]]
 name = "openshift-cli-installer"
-version = "2.0.1"
+version = "2.0.2"
 description = "CLI to install/uninstall Openshift clusters."
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "openshift_cli_installer-2.0.1.tar.gz", hash = "sha256:ae06a917bdec9a47acbe8daa35c9c19f38682216222e7a7966aae5dd2c014304"},
+    {file = "openshift_cli_installer-2.0.2.tar.gz", hash = "sha256:ac462775985d19150935ec0a47412bdc881228fb2a5bfe1852b2bef9f69b96b4"},
 ]
 
 [package.dependencies]
