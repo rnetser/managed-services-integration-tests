@@ -32,16 +32,14 @@ class ConsumerPod(Pod):
     def to_dict(self):
         super().to_dict()
 
-        self.res.update(
-            {
-                "spec": {
-                    "containers": [
-                        {
-                            "name": self.name,
-                            "image": self.consumer_image,
-                            "command": shlex.split(s="sleep 1d"),
-                        }
-                    ],
-                }
+        self.res.update({
+            "spec": {
+                "containers": [
+                    {
+                        "name": self.name,
+                        "image": self.consumer_image,
+                        "command": shlex.split(s="sleep 1d"),
+                    }
+                ],
             }
-        )
+        })
