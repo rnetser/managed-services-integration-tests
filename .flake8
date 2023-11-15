@@ -1,4 +1,6 @@
 [flake8]
+select=FCN,M511
+
 # UFN plugin must be run in serial
 jobs = 0
 

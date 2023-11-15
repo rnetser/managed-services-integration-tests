@@ -2,35 +2,18 @@ default_language_version:
     python: python3
 
 repos:
-  - repo: https://github.com/PyCQA/autoflake
-    rev: "v2.2.1"
-    hooks:
-      - id: autoflake
-        args:
-          - --in-place
-          - --remove-unused-variables
-          - --remove-all-unused-imports
-
-  - repo: https://github.com/PyCQA/isort
-    rev: "5.12.0"
-    hooks:
-      - id: isort
-
-  - repo: https://github.com/psf/black
-    rev: "23.11.0"
-    hooks:
-    - id: black
-      args: [--preview]
-
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: "v4.5.0"
     hooks:
     - id: check-merge-conflict
     - id: debug-statements
     - id: trailing-whitespace
+      args: [--markdown-linebreak-ext=md] # Do not process Markdown files.
     - id: end-of-file-fixer
     - id: check-ast
     - id: check-builtin-literals
+    - id: check-docstring-first
+    - id: check-toml
 
   - repo: https://github.com/PyCQA/flake8
     rev: "6.1.0"
@@ -39,17 +22,16 @@ repos:
         args: [--config=.flake8]
         additional_dependencies: [
           "git+https://github.com/RedHatQE/flake8-plugins.git",
-          "pep8-naming",
           "flake8-mutable",
         ]
 
-  - repo: https://github.com/jorisroovers/gitlint
-    rev:  "v0.19.1"
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.4.0
     hooks:
-      - id: gitlint
+      - id: detect-secrets
 
-  - repo: https://github.com/igorshubovych/markdownlint-cli
-    rev: v0.37.0
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.1.5
     hooks:
-    - id: markdownlint
-      args: [--fix]
+      - id: ruff
+      - id: ruff-format

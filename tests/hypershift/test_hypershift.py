@@ -21,9 +21,7 @@ class RegionNotFoundError(Exception):
 
 @pytest.fixture(scope="session")
 def rosa_hypershift_regions(rosa_regions):
-    hypershift_regions = [
-        region["id"] for region in rosa_regions if region["supports_hypershift"] is True
-    ]
+    hypershift_regions = [region["id"] for region in rosa_regions if region["supports_hypershift"] is True]
     if not hypershift_regions:
         LOGGER.error("No Hypershift-supported regions found")
         raise RegionNotFoundError
@@ -37,18 +35,11 @@ def aws_region(rosa_hypershift_regions):
     if pyconfig_aws_region:
         if pyconfig_aws_region in rosa_hypershift_regions:
             return pyconfig_aws_region
-        raise ValueError(
-            f"{pyconfig_aws_region} is not supported, supported regions:"
-            f" {rosa_hypershift_regions}"
-        )
+        raise ValueError(f"{pyconfig_aws_region} is not supported, supported regions:" f" {rosa_hypershift_regions}")
     # If a region was not passed, use a hypershift-enabled region with the lowest number of used VPCs
     region, vpcs = None, None
     for _region in rosa_hypershift_regions:
-        num_vpcs = len(
-            boto3.client(service_name="ec2", region_name=_region).describe_vpcs()[
-                "Vpcs"
-            ]
-        )
+        num_vpcs = len(boto3.client(service_name="ec2", region_name=_region).describe_vpcs()["Vpcs"])
         if vpcs is None or num_vpcs < vpcs:
             region = _region
             vpcs = num_vpcs
@@ -122,9 +113,7 @@ class TestHypershiftCluster:
         if result.exit_code != 0:
             pytest.fail(f"Failed to create cluster on {result.stderr}")
 
-    @pytest.mark.dependency(
-        name="test_install_operator", depends=["test_hypershift_cluster_installation"]
-    )
+    @pytest.mark.dependency(name="test_install_operator", depends=["test_hypershift_cluster_installation"])
     def test_install_operator(self, cluster_scope_class):
         install_operator(
             admin_client=cluster_scope_class.ocp_client,

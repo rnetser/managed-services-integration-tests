@@ -39,10 +39,7 @@ def pytest_addoption(parser):
     # Data collector group
     data_collector_group.addoption(
         "--data-collector",
-        help=(
-            "pass YAML file path to enable data collector to capture additional logs"
-            " and resources"
-        ),
+        help=("pass YAML file path to enable data collector to capture additional logs" " and resources"),
     )
     data_collector_group.addoption(
         "--pytest-log-file",
@@ -134,9 +131,7 @@ def pytest_sessionfinish(session, exitstatus):
 
     # Remove empty directories from data collector directory
     if session.config.getoption("--data-collector"):
-        collector_directory = py_config["data_collector"][
-            "data_collector_base_directory"
-        ]
+        collector_directory = py_config["data_collector"]["data_collector_base_directory"]
         for root, dirs, files in os.walk(collector_directory, topdown=False):
             for _dir in dirs:
                 dir_path = os.path.join(root, _dir)
@@ -154,24 +149,16 @@ def pytest_runtest_teardown(item):
 
 @pytest.fixture(scope="session")
 def junitxml_plugin(request, record_testsuite_property):
-    return (
-        record_testsuite_property
-        if request.config.pluginmanager.has_plugin("junitxml")
-        else None
-    )
+    return record_testsuite_property if request.config.pluginmanager.has_plugin("junitxml") else None
 
 
 def pytest_exception_interact(node, call, report):
     BASIC_LOGGER.error(report.longreprtext)
-    if node.session.config.getoption(
-        "--data-collector"
-    ) and not node.get_closest_marker(name="skip_data_collector"):
+    if node.session.config.getoption("--data-collector") and not node.get_closest_marker(name="skip_data_collector"):
         resources_to_collect = [Node]
         base_directory = py_config["data_collector"]["data_collector_base_directory"]
         try:
-            collect_resources_yaml_instance(
-                resources_to_collect=resources_to_collect, base_directory=base_directory
-            )
+            collect_resources_yaml_instance(resources_to_collect=resources_to_collect, base_directory=base_directory)
             pods = list(Pod.get(dyn_client=get_client()))
             collect_pods_data(pods_list=pods, base_directory=base_directory)
 
@@ -182,15 +169,9 @@ def pytest_exception_interact(node, call, report):
 
 def set_up_pytest_runtest_phase(item, phase):
     BASIC_LOGGER.info(f"{separator(symbol_='-', val=phase)}")
-    if item.session.config.getoption(
-        "--data-collector"
-    ) and not item.get_closest_marker(name="skip_data_collector"):
-        py_config["data_collector"]["collector_directory"] = (
-            prepare_pytest_item_data_dir(
-                item=item,
-                base_directory=py_config["data_collector"][
-                    "data_collector_base_directory"
-                ],
-                subdirectory_name=phase.lower(),
-            )
+    if item.session.config.getoption("--data-collector") and not item.get_closest_marker(name="skip_data_collector"):
+        py_config["data_collector"]["collector_directory"] = prepare_pytest_item_data_dir(
+            item=item,
+            base_directory=py_config["data_collector"]["data_collector_base_directory"],
+            subdirectory_name=phase.lower(),
         )

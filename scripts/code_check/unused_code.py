@@ -58,11 +58,7 @@ def get_unused_functions():
             tree = ast.parse(source=fd.read())
 
         for func in _iter_functions(tree=tree):
-            if [
-                func.name
-                for ignore_prefix in func_ignore_prefix
-                if func.name.startswith(ignore_prefix)
-            ]:
+            if [func.name for ignore_prefix in func_ignore_prefix if func.name.startswith(ignore_prefix)]:
                 continue
 
             if is_fixture_autouse(func=func):

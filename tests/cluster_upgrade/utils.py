@@ -33,9 +33,7 @@ def get_upgrade_next_run_time():
     return upgrade_next_run_time
 
 
-def wait_for_cluster_version_state_and_version(
-    cluster_version, target_ocp_version, collect_data
-):
+def wait_for_cluster_version_state_and_version(cluster_version, target_ocp_version, collect_data):
     def _cluster_version_state_and_version(_cluster_version, _target_ocp_version):
         cluster_version_status_history = _cluster_version.instance.status.history[0]
         LOGGER.info(f"clusterversion status.history: {cluster_version_status_history}")
@@ -75,6 +73,4 @@ def get_clusterversion(dyn_client):
 def collect_resources(collect_data, resources_to_collect):
     if collect_data:
         base_directory = py_config["data_collector"]["data_collector_base_directory"]
-        collect_resources_yaml_instance(
-            resources_to_collect=resources_to_collect, base_directory=base_directory
-        )
+        collect_resources_yaml_instance(resources_to_collect=resources_to_collect, base_directory=base_directory)

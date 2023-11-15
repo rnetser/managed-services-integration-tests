@@ -21,8 +21,7 @@ def test_cluster_upgrade(
     upgradable_cloud_credentials_operator,
 ):
     LOGGER.info(
-        f"Test cluster {cluster.name} upgrade from {cluster.instance.version.raw_id} to"
-        f" {ocp_target_version}"
+        f"Test cluster {cluster.name} upgrade from {cluster.instance.version.raw_id} to" f" {ocp_target_version}"
     )
     wait_for_cluster_version_state_and_version(
         cluster_version=get_clusterversion(dyn_client=cluster.ocp_client),

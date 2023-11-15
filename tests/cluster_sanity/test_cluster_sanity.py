@@ -11,9 +11,7 @@ def admin_client_scope_function(kubeconfig_file_paths):
     """
     Get DynamicClient
     """
-    return get_client(
-        config_file=kubeconfig_file_paths if kubeconfig_file_paths else None
-    )
+    return get_client(config_file=kubeconfig_file_paths if kubeconfig_file_paths else None)
 
 
 @pytest.fixture(scope="session")

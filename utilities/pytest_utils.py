@@ -32,9 +32,7 @@ def exit_pytest_execution(
         write_to_file(
             file_name=filename,
             content=message,
-            base_directory=get_data_collector_base_dir(
-                data_collector_dict=get_data_collector_dict()
-            ),
+            base_directory=get_data_collector_base_dir(data_collector_dict=get_data_collector_dict()),
             extra_dir_name="pytest_exit_errors",
         )
     if junitxml_property:

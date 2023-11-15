@@ -10,15 +10,8 @@ pytestmark = pytest.mark.mas_debezium
 class TestDebezium:
     def test_create_kafka_topics(self, kafka_topics):
         created_kafka_topics_names = [topic_dict.name for topic_dict in kafka_topics]
-        missing_topics = [
-            topic
-            for topic in KAFKA_TOPICS_LIST
-            if topic not in created_kafka_topics_names
-        ]
-        assert not missing_topics, (
-            f"Missing kafka topics: {missing_topics}, expected topics:"
-            f" {KAFKA_TOPICS_LIST}"
-        )
+        missing_topics = [topic for topic in KAFKA_TOPICS_LIST if topic not in created_kafka_topics_names]
+        assert not missing_topics, f"Missing kafka topics: {missing_topics}, expected topics:" f" {KAFKA_TOPICS_LIST}"
 
     def test_kafka_record_in_consumer_pod(
         self,
@@ -44,6 +37,5 @@ class TestDebezium:
             ),
         )
         assert consumed_event.strip("\n") == kafka_record, (
-            "Failed to consume the correct record. Existing Kafka"
-            f" event:\n{consumed_event}"
+            "Failed to consume the correct record. Existing Kafka" f" event:\n{consumed_event}"
         )
