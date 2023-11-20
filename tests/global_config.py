@@ -7,6 +7,7 @@ openshift_channel_group = "candidate"
 aws_compute_machine_type = "m5.xlarge"
 rosa_number_of_nodes = 2
 cloud_provider = "aws"
+kubeadmin_token = None  # Needed for acm_observability tests
 # Needed for rosa login when running in openshift.ci; need to be set to a directory with write permissions ("/tmp")
 home_dir = None
 
