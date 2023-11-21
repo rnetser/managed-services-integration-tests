@@ -7,3 +7,16 @@
 .gitignore
 renovate.json
 pytest-tests.log
+.flake8
+.gitlab-ci.yml
+.markdownlint.yaml
+.markdownlintignore
+.pre-commit-config.yaml
+sonar-project.properties
+.github
+.ruff_cache
+include
+lib
+.gitlint
+.dockerignore
+.pytest_cache

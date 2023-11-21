@@ -12,6 +12,9 @@ name = "managed-services-integration-tests"
 version = "1.0"
 description = "managed-services-integration-tests"
 authors = ["managed-services-integration-tests"]
+packages = [
+    { include = "*" }
+]
 
 [tool.poetry.dependencies]
 python = "^3.9"

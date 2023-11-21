@@ -19,8 +19,8 @@ RUN dnf -y install epel-release dnf-plugins-core && \
     dnf clean all && \
     rm -rf /var/cache/yum
 
-COPY / managed-services-integration-tests/
-WORKDIR managed-services-integration-tests
+COPY . /managed-services-integration-tests/
+WORKDIR /managed-services-integration-tests
 RUN ln -s /usr/bin/python3 /usr/bin/python
 
 # GH_HOST is needed as a workaround to access the repository in GitHub
