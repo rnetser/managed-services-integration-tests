@@ -30,6 +30,7 @@ def nodes_scope_function(admin_client_scope_function):
 
 
 @pytest.mark.smoke
+@pytest.mark.smoke_single
 def test_cluster_sanity(nodes_scope_session, pods_scope_session, junitxml_plugin):
     cluster_sanity(
         nodes=nodes_scope_session,
