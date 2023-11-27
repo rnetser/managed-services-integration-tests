@@ -1,29 +1,13 @@
-import os
-
+import json
 import pytest
-import requests
+import base64
 from ocp_resources.managed_cluster import ManagedCluster
 from ocp_resources.multi_cluster_observability import MultiClusterObservability
-from ocp_resources.route import Route
-from pytest_testconfig import config as py_config
+from ocp_resources.secret import Secret
 from simple_logger.logger import get_logger
-
+from ocp_utilities.monitoring import Prometheus
 
 LOGGER = get_logger(name=__name__)
-
-
-@pytest.fixture(scope="session")
-def kubeadmin_token():
-    kubeadmin_token_env_var_name = "KUBEADMIN_TOKEN"
-    token = os.getenv(kubeadmin_token_env_var_name, py_config.get("kubeadmin_token", ""))
-
-    assert token, (
-        "kubeadmin token is not set; either set as an environment variable"
-        f" {kubeadmin_token_env_var_name} or via pytest command line using"
-        " --tc:kubeadmin_token=<kubeadmin token>"
-    )
-
-    return token
 
 
 @pytest.fixture(scope="session")
@@ -43,33 +27,28 @@ def multi_cluster_observability(admin_client_scope_session):
 
 
 @pytest.fixture(scope="session")
-def rbac_proxy_route_url(admin_client_scope_session, multi_cluster_observability):
-    rbac_proxy_route = Route(
-        client=admin_client_scope_session,
-        name="rbac-query-proxy",
-        namespace="open-cluster-management-observability",
-    )
-    assert rbac_proxy_route.exists, f"{rbac_proxy_route.name} Route does not exist"
+def rbac_query_proxy_bearer_token(admin_client_scope_session):
+    hub_cluster = "local-cluster"
+    hub_cluster_secret = f"{hub_cluster}-cluster-secret"
 
-    return rbac_proxy_route.instance.spec.host
+    bearer_token_secret = Secret(
+        client=admin_client_scope_session,
+        name=hub_cluster_secret,
+        namespace=hub_cluster,
+    )
+    assert bearer_token_secret.exists, f"{hub_cluster_secret} Secret does not exist"
+
+    return json.loads(base64.b64decode(bearer_token_secret.instance.data.config))["bearerToken"]
 
 
 @pytest.fixture(scope="session")
-def etcd_metrics_query(rbac_proxy_route_url, kubeadmin_token):
-    query_name = "etcd_debugging_mvcc_db_total_size_in_bytes"
-    query_result = requests.get(
-        url=f"https://{rbac_proxy_route_url}/api/v1/query?query={query_name}",
-        headers={
-            "Authorization": f"Bearer {kubeadmin_token}",
-        },
-        verify=False,  # TODO: add certificate to verify query
-    )
-
-    assert query_result.ok, (
-        f"Query request at {rbac_proxy_route_url} for '{query_name}' metric failed with"
-        f" status {query_result.status_code}: {query_result.reason}"
-    )
-    return query_result.json()["data"]["result"]
+def etcd_metrics_query(admin_client_scope_session, rbac_query_proxy_bearer_token):
+    return Prometheus(
+        client=admin_client_scope_session,
+        resource_name="rbac-query-proxy",
+        namespace="open-cluster-management-observability",
+        bearer_token=rbac_query_proxy_bearer_token,
+    ).query_sampler(query="etcd_debugging_mvcc_db_total_size_in_bytes")
 
 
 @pytest.fixture(scope="session")

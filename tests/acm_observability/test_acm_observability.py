@@ -1,7 +1,7 @@
 import pytest
 
 
-pytestmark = [pytest.mark.acm_observability, pytest.mark.usefixtures("kubeadmin_token")]
+pytestmark = [pytest.mark.acm_observability, pytest.mark.usefixtures("multi_cluster_observability")]
 
 
 class TestACMObservability:
