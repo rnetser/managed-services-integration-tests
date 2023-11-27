@@ -30,7 +30,7 @@ def nodes_scope_function(admin_client_scope_function):
 
 
 @pytest.mark.smoke
-@pytest.mark.smoke_single
+@pytest.mark.smoke_single_cluster
 def test_cluster_sanity(nodes_scope_session, pods_scope_session, junitxml_plugin):
     cluster_sanity(
         nodes=nodes_scope_session,
@@ -39,7 +39,7 @@ def test_cluster_sanity(nodes_scope_session, pods_scope_session, junitxml_plugin
     )
 
 
-@pytest.mark.smoke_multi
+@pytest.mark.smoke_multi_cluster
 def test_multi_clusters_sanity(
     nodes_scope_function,
     pods_scope_function,
