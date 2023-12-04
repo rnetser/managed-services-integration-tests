@@ -115,19 +115,7 @@ def pytest_runtest_setup(item):
 
 def pytest_sessionfinish(session, exitstatus):
     reporter = session.config.pluginmanager.get_plugin("terminalreporter")
-    deselected_str = "deselected"
-    deselected = len(reporter.stats.get(deselected_str, []))
-    summary = (
-        f"{deselected} {deselected_str}, "
-        f"{reporter.pass_count} {'passed'}, "
-        f"{reporter.skip_count} {'skipped'}, "
-        f"{reporter.fail_count} {'failed'}, "
-        f"{reporter.error_count} {'error'}, "
-        f"{reporter.xfail_count} {'xfail'}, "
-        f"{reporter.xpass_count} {'xpass'}, "
-        f"exit status {exitstatus} "
-    )
-    BASIC_LOGGER.info(f"{separator(symbol_='-', val=summary)}")
+    reporter.summary_stats()
 
     # Remove empty directories from data collector directory
     if session.config.getoption("--data-collector"):
