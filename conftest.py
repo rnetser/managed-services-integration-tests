@@ -13,10 +13,10 @@ from ocp_wrapper_data_collector.data_collector import (
 )
 from pyaml_env import parse_config
 from pytest_testconfig import config as py_config
-from simple_logger.logger import get_logger
 
+from utilities.logger import setup_logging
 
-LOGGER = get_logger(name=__name__)
+LOGGER = logging.getLogger(__name__)
 BASIC_LOGGER = logging.getLogger("basic")
 
 
@@ -83,6 +83,11 @@ def pytest_sessionstart(session):
     tests_log_file = session.config.getoption("pytest_log_file")
     if os.path.exists(tests_log_file):
         shutil.rmtree(tests_log_file, ignore_errors=True)
+
+    setup_logging(
+        log_file=tests_log_file,
+        log_level=session.config.getoption("log_cli_level") or logging.INFO,
+    )
 
 
 def pytest_report_teststatus(report, config):
