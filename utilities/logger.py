@@ -1,6 +1,7 @@
 import logging
 from datetime import datetime
 from logging.handlers import RotatingFileHandler
+from pathlib import Path
 
 from colorlog import ColoredFormatter
 
@@ -32,6 +33,11 @@ class TestLogFormatter(ColoredFormatter):
 
 
 def setup_logging(log_level, log_file="/tmp/pytest-tests.log"):
+    log_file_path = Path(log_file)
+    log_file_path_parent = log_file_path.parent
+    if not log_file_path_parent.exists():
+        log_file_path_parent.mkdir(parents=True)
+
     logger_obj = logging.getLogger()
     basic_logger = logging.getLogger("basic")
 

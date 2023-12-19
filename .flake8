@@ -31,6 +31,7 @@ fcn_exclude_functions =
     shlex,
     contextlib,
     metafunc,
+    Path,
 
 enable-extensions =
     FCN,
