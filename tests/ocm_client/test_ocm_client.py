@@ -1,6 +1,6 @@
 import pytest
 from ocm_python_client import ApiException
-from ocp_resources.utils import TimeoutExpiredError, TimeoutSampler
+from timeout_sampler import TimeoutExpiredError, TimeoutSampler
 from simple_logger.logger import get_logger
 
 
