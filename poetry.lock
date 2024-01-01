@@ -799,12 +799,12 @@ urllib3 = ">=1.25.3"
 
 [[package]]
 name = "openshift-cluster-management-python-wrapper"
-version = "1.0.60"
+version = "1.0.61"
 description = "Wrapper around https://github.com/openshift/openshift-cluster-management-python-client"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "openshift_cluster_management_python_wrapper-1.0.60.tar.gz", hash = "sha256:5c70963c04e4de7986797b0eade2362db0343c37bdb2654de8e9e143340c23fa"},
+    {file = "openshift_cluster_management_python_wrapper-1.0.61.tar.gz", hash = "sha256:f084e8e0f1ce74cc6e37c06bbe0991832957f5361ec888887f66a8ed766a4155"},
 ]
 
 [package.dependencies]
@@ -819,6 +819,7 @@ pyyaml = ">=6.0.1,<7.0.0"
 redhat-qe-cloud-tools = ">=1.0.10,<2.0.0"
 requests = ">=2.31.0,<3.0.0"
 rosa-python-client = ">=1.0.28,<2.0.0"
+timeout-sampler = ">=0.0.1,<0.0.2"
 
 [[package]]
 name = "openshift-python-utilities"
@@ -1664,4 +1665,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "fb199670b594098b5332e70415ae6a88c079284bff2aadc75208dd813b337efd"
+content-hash = "ad835d8ecf9bdd6d97ffa3e4870765b72d22a7d1ddd703d165254dadcbc64536"
