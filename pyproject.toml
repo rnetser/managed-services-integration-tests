@@ -12,14 +12,12 @@ name = "managed-services-integration-tests"
 version = "1.0"
 description = "managed-services-integration-tests"
 authors = ["managed-services-integration-tests"]
-packages = [
-    { include = "*" }
-]
+packages = [{ include = "*" }]
 
 [tool.poetry.dependencies]
 python = "^3.9"
-pytest-progress = "==1.2.5"  # https://github.com/ssrikanta/pytest-progress
-openshift-python-wrapper = "^4.14.1"
+pytest-progress = "==1.2.5"                             # https://github.com/ssrikanta/pytest-progress
+openshift-python-wrapper = "^4.15.13"
 docker = "^7.0.0"
 colorlog = "^6.7.0"
 openshift-cluster-management-python-wrapper = "^1.0.27"
