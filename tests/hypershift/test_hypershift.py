@@ -1,8 +1,8 @@
-import boto3
 import openshift_cli_installer.cli
 import pytest
 import shortuuid
 from click.testing import CliRunner
+from clouds.aws.aws_utils import get_least_crowded_aws_vpc_region
 from ocm_python_wrapper.cluster import Cluster
 from ocp_utilities.operators import install_operator, uninstall_operator
 from pytest_testconfig import py_config
@@ -37,13 +37,7 @@ def aws_region(rosa_hypershift_regions):
             return pyconfig_aws_region
         raise ValueError(f"{pyconfig_aws_region} is not supported, supported regions:" f" {rosa_hypershift_regions}")
     # If a region was not passed, use a hypershift-enabled region with the lowest number of used VPCs
-    region, vpcs = None, None
-    for _region in rosa_hypershift_regions:
-        num_vpcs = len(boto3.client(service_name="ec2", region_name=_region).describe_vpcs()["Vpcs"])
-        if vpcs is None or num_vpcs < vpcs:
-            region = _region
-            vpcs = num_vpcs
-    return region
+    return get_least_crowded_aws_vpc_region(region_list=rosa_hypershift_regions)
 
 
 @pytest.fixture(scope="class")
