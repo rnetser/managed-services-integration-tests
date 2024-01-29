@@ -741,31 +741,31 @@ signedtoken = ["cryptography (>=3.0.0)", "pyjwt (>=2.0.0,<3)"]
 
 [[package]]
 name = "openshift-cli-installer"
-version = "2.0.25"
+version = "2.0.27"
 description = "CLI to install/uninstall Openshift clusters."
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "openshift_cli_installer-2.0.25.tar.gz", hash = "sha256:53b23cb50882790a2df626f191dc8a620b040d84c4e93fb62d0f0e4be13a9798"},
+    {file = "openshift_cli_installer-2.0.27.tar.gz", hash = "sha256:36a549bc468ab48e5b2f78f820eaa5cda656c9f9fb0f2b989ce5eb2d76af2f54"},
 ]
 
 [package.dependencies]
 click = ">=8.1.4,<9.0.0"
 google-cloud-compute = ">=1.14.1,<2.0.0"
 jinja2 = ">=3.1.2,<4.0.0"
-openshift-cluster-management-python-wrapper = ">=1.0.54,<2.0.0"
-openshift-python-utilities = ">=5.0.0,<6.0.0"
-openshift-python-wrapper = ">=10.0.0,<11.0.0"
+openshift-cluster-management-python-wrapper = ">=1.0.54"
+openshift-python-utilities = ">=5.0.0"
+openshift-python-wrapper = ">=10.0.0"
 pyaml-env = ">=1.2.1,<2.0.0"
 pytest-testconfig = ">=0.2.0,<0.3.0"
-python-simple-logger = ">=1.0.7,<2.0.0"
+python-simple-logger = ">=1.0.7"
 python-terraform = ">=0.10.1,<0.11.0"
-redhat-qe-cloud-tools = ">=1.0.19,<2.0.0"
-rosa-python-client = ">=1.0.36,<2.0.0"
+redhat-qe-cloud-tools = ">=1.0.19"
+rosa-python-client = ">=1.0.36"
 ruff = ">=0.1.5,<0.2.0"
 semver = ">=3.0.1,<4.0.0"
 shortuuid = ">=1.0.11,<2.0.0"
-timeout-sampler = ">=0.0.1,<0.0.2"
+timeout-sampler = ">=0.0.1"
 
 [[package]]
 name = "openshift-cluster-management-python-client"
