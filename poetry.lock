@@ -783,53 +783,54 @@ urllib3 = ">=1.25.3"
 
 [[package]]
 name = "openshift-cluster-management-python-wrapper"
-version = "1.0.68"
+version = "1.0.70"
 description = "Wrapper around https://github.com/openshift/openshift-cluster-management-python-client"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "openshift_cluster_management_python_wrapper-1.0.68.tar.gz", hash = "sha256:0fdaa416118fc543231e3140a19ed549e1b0a7afcd4d167baf5841f19d2d7241"},
+    {file = "openshift_cluster_management_python_wrapper-1.0.70.tar.gz", hash = "sha256:5a48c4d6a19d114d043fd1165e3d36f7cacb5eb7b74b447699faf96e04318807"},
 ]
 
 [package.dependencies]
 colorlog = ">=6.7.0,<7.0.0"
 importlib = ">=1.0.4,<2.0.0"
-openshift-cluster-management-python-client = ">=1.0.23,<2.0.0"
-openshift-python-utilities = ">=5.0.0,<6.0.0"
-openshift-python-wrapper = ">=10.0.0,<11.0.0"
+openshift-cluster-management-python-client = ">=1.0.23"
+openshift-python-utilities = ">=5.0.0"
+openshift-python-wrapper = ">=10.0.0"
 python-benedict = "0.33.1"
-python-simple-logger = ">=1.0.5,<2.0.0"
+python-simple-logger = ">=1.0.5"
 pyyaml = ">=6.0.1,<7.0.0"
-redhat-qe-cloud-tools = ">=1.0.10,<2.0.0"
+redhat-qe-cloud-tools = ">=1.0.10"
 requests = ">=2.31.0,<3.0.0"
-rosa-python-client = ">=1.0.28,<2.0.0"
-timeout-sampler = ">=0.0.1,<0.0.2"
+rosa-python-client = ">=1.0.28"
+timeout-sampler = ">=0.0.2"
 
 [[package]]
 name = "openshift-python-utilities"
-version = "5.0.21"
+version = "5.0.23"
 description = "A utilities repository for https://github.com/RedHatQE/openshift-python-wrapper"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "openshift_python_utilities-5.0.21.tar.gz", hash = "sha256:57fcb2fc59a40bd2bb5986ee77c309c3750065bf32a299c00454c475b408eb88"},
+    {file = "openshift_python_utilities-5.0.23.tar.gz", hash = "sha256:0e1ca538dea592d0a94de010196fe8ae72ad44c2f4d6395cb4bec3569a663ca4"},
 ]
 
 [package.dependencies]
 colorlog = ">=6.7.0,<7.0.0"
-openshift-python-wrapper-data-collector = ">=1.0.4,<2.0.0"
-python-simple-logger = ">=1.0.5,<2.0.0"
+openshift-python-wrapper = ">=10.0.4"
+openshift-python-wrapper-data-collector = ">=1.0.4"
+python-simple-logger = ">=1.0.5"
 pyyaml = ">=6.0.1,<7.0.0"
-timeout-sampler = ">=0.0.1,<0.0.2"
+timeout-sampler = ">=0.0.1"
 
 [[package]]
 name = "openshift-python-wrapper"
-version = "10.0.2"
+version = "10.0.5"
 description = "Wrapper around https://github.com/kubernetes-client/python"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "openshift_python_wrapper-10.0.2.tar.gz", hash = "sha256:e0258c5ac4d81824c3f7d881025d1c9f4dcedd068cd3ed4bd35b889d153c1e88"},
+    {file = "openshift_python_wrapper-10.0.5.tar.gz", hash = "sha256:bc5d1f2e1b4a8c2e73675d1f44499d9c87ff0fd987874ebe5fd18fde2c84e09c"},
 ]
 
 [package.dependencies]
@@ -838,8 +839,8 @@ jinja2 = ">=3.1.2,<4.0.0"
 kubernetes = ">=29.0.0,<30.0.0"
 packaging = ">=23.1,<24.0"
 python-benedict = ">=0.33.0,<0.34.0"
-python-simple-logger = ">=1.0.6,<2.0.0"
-timeout-sampler = ">=0.0.1,<0.0.2"
+python-simple-logger = ">=1.0.6"
+timeout-sampler = ">=0.0.2"
 xmltodict = ">=0.13.0,<0.14.0"
 
 [[package]]
@@ -1533,16 +1534,16 @@ files = [
 
 [[package]]
 name = "timeout-sampler"
-version = "0.0.1"
+version = "0.0.3"
 description = "Timeout utility class to wait for any function output and interact with it in given time"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "timeout_sampler-0.0.1.tar.gz", hash = "sha256:e148f6e04a19b64f36209bbf3a7f8eb44ce6d9746edc09923fa8ea9dc6a110e9"},
+    {file = "timeout_sampler-0.0.3.tar.gz", hash = "sha256:16b529ec86dfc8980f19d95ee440190e8993749d75960beb4d2190247020056a"},
 ]
 
 [package.dependencies]
-python-simple-logger = ">=1.0.8,<2.0.0"
+python-simple-logger = ">=1.0.8"
 
 [[package]]
 name = "tomli"
@@ -1655,4 +1656,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "f014d7572784c5bdd0b4ad9865e5d2cc8e2179dd0900e0363e8a53e8140624e8"
+content-hash = "518e222f430d018b89a6ef048afc8a783a078112a158fe2fa4b3a36c7d76777a"
