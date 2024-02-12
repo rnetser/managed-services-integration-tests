@@ -19,6 +19,27 @@ astroid = ["astroid (>=1,<2)", "astroid (>=2,<4)"]
 test = ["astroid (>=1,<2)", "astroid (>=2,<4)", "pytest"]
 
 [[package]]
+name = "beautifulsoup4"
+version = "4.12.3"
+description = "Screen-scraping library"
+optional = false
+python-versions = ">=3.6.0"
+files = [
+    {file = "beautifulsoup4-4.12.3-py3-none-any.whl", hash = "sha256:b80878c9f40111313e55da8ba20bdba06d8fa3969fc68304167741bbf9e082ed"},
+    {file = "beautifulsoup4-4.12.3.tar.gz", hash = "sha256:74e3d1928edc070d21748185c46e3fb33490f22f52a3addee9aee0f4f7781051"},
+]
+
+[package.dependencies]
+soupsieve = ">1.2"
+
+[package.extras]
+cchardet = ["cchardet"]
+chardet = ["chardet"]
+charset-normalizer = ["charset-normalizer"]
+html5lib = ["html5lib"]
+lxml = ["lxml"]
+
+[[package]]
 name = "boto3"
 version = "1.34.39"
 description = "The AWS SDK for Python"
@@ -741,15 +762,16 @@ signedtoken = ["cryptography (>=3.0.0)", "pyjwt (>=2.0.0,<3)"]
 
 [[package]]
 name = "openshift-cli-installer"
-version = "2.0.32"
+version = "2.0.33"
 description = "CLI to install/uninstall Openshift clusters."
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "openshift_cli_installer-2.0.32.tar.gz", hash = "sha256:fa993e7672e8970667c8b85097190d94d6087a7dedca7e1f9cad4ddf89baac52"},
+    {file = "openshift_cli_installer-2.0.33.tar.gz", hash = "sha256:ce3dc5a6dfbe9703909f91f9f9b78426c376cc7e7b3c72685b05f9a2a5388a96"},
 ]
 
 [package.dependencies]
+beautifulsoup4 = ">=4.12.3,<5.0.0"
 click = ">=8.1.4,<9.0.0"
 google-cloud-compute = ">=1.14.1,<2.0.0"
 jinja2 = ">=3.1.2,<4.0.0"
@@ -761,6 +783,7 @@ pytest-testconfig = ">=0.2.0,<0.3.0"
 python-simple-logger = ">=1.0.7"
 python-terraform = ">=0.10.1,<0.11.0"
 redhat-qe-cloud-tools = ">=1.0.19"
+requests = ">=2.31.0,<3.0.0"
 rosa-python-client = ">=1.0.36"
 ruff = ">=0.2.0,<0.3.0"
 semver = ">=3.0.1,<4.0.0"
@@ -1503,6 +1526,17 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*"
 files = [
     {file = "six-1.16.0-py2.py3-none-any.whl", hash = "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254"},
     {file = "six-1.16.0.tar.gz", hash = "sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926"},
+]
+
+[[package]]
+name = "soupsieve"
+version = "2.5"
+description = "A modern CSS selector implementation for Beautiful Soup."
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "soupsieve-2.5-py3-none-any.whl", hash = "sha256:eaa337ff55a1579b6549dc679565eac1e3d000563bcb1c8ab0d0fefbc0c2cdc7"},
+    {file = "soupsieve-2.5.tar.gz", hash = "sha256:5663d5a7b3bfaeee0bc4372e7fc48f9cff4940b3eec54a6451cc5299f1097690"},
 ]
 
 [[package]]
