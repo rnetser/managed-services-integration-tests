@@ -39,7 +39,7 @@ packaging = "^23.1"
 pyaml-env = "^1.2.1"
 openshift-cli-installer = "^2.0.0"
 openshift-python-utilities = "^5.0.4"
-timeout-sampler = "^0.0.7"
+timeout-sampler = "^0.0.8"
 
 [tool.poetry.dev-dependencies]
 ipdb = "*"
